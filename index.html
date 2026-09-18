@@ -1,0 +1,1058 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+<meta name="theme-color" content="#0d47a1">
+<meta name="description" content="HireHere — Local Jobs. Verified Employers. 2-Minute Apply. Founded by Sujit Shinde.">
+<meta name="author" content="Sujit Shinde">
+<meta property="og:title" content="HireHere — Local Jobs. Verified Employers. 2-Minute Apply.">
+<meta property="og:description" content="India's blue-collar job platform. Founded by Sujit Shinde.">
+<meta property="og:type" content="website">
+<title>HireHere — लोकल काम, 2 मिनट में अप्लाई | Founded by Sujit Shinde</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏢</text></svg>">
+<style>
+:root {
+  --blue:#0d47a1; --blue2:#1976d2; --orange:#ff6f00; --orange2:#e65100;
+  --green:#2e7d32; --wa:#25D366; --grey:#f5f5f5; --dark:#1a1a1a; --muted:#666;
+  --radius:14px; --shadow:0 2px 10px rgba(0,0,0,0.06); --shadow-lg:0 8px 24px rgba(0,0,0,0.15);
+}
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+html { scroll-behavior:smooth; }
+body {
+  font-family:'Noto Sans','Segoe UI',Arial,sans-serif;
+  background:var(--grey); color:var(--dark); font-size:16px; line-height:1.5;
+  padding-bottom:76px; overflow-x:hidden;
+}
+img { max-width:100%; display:block; }
+button { font-family:inherit; cursor:pointer; border:none; }
+a { text-decoration:none; color:inherit; }
+
+/* ===== SPLASH ===== */
+.splash {
+  position:fixed; inset:0; background:var(--blue); z-index:9999;
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  color:#fff; transition:opacity 0.5s, visibility 0.5s;
+}
+.splash.hide { opacity:0; visibility:hidden; }
+.splash .logo { font-size:44px; font-weight:900; letter-spacing:-1px; }
+.splash .logo span { color:var(--orange); }
+.splash .tag { font-size:13px; margin-top:8px; opacity:0.9; text-align:center; padding:0 20px; }
+.splash .loader { margin-top:26px; width:36px; height:36px; border:3px solid rgba(255,255,255,0.25); border-top-color:var(--orange); border-radius:50%; animation:spin 0.9s linear infinite; }
+@keyframes spin { to { transform:rotate(360deg); } }
+
+/* ===== HEADER ===== */
+.app-header {
+  background:var(--blue); color:#fff; padding:11px 14px; position:sticky; top:0; z-index:100;
+  box-shadow:0 2px 8px rgba(0,0,0,0.15);
+}
+.header-top { display:flex; justify-space-between:space-between; align-items:center; gap:10px; }
+.app-logo { font-size:22px; font-weight:900; letter-spacing:-0.5px; line-height:1; }
+.app-logo span { color:var(--orange); }
+.founder-badge { font-size:10px; opacity:0.85; margin-top:3px; letter-spacing:0.2px; }
+.header-right { display:flex; align-items:center; gap:8px; }
+.icon-btn {
+  background:rgba(255,255,255,0.15); border:1px solid rgba(255,255,255,0.25);
+  color:#fff; width:38px; height:38px; border-radius:50%; font-size:16px;
+  display:flex; align-items:center; justify-content:center;
+}
+.lang-toggle {
+  background:rgba(255,255,255,0.18); border:1px solid rgba(255,255,255,0.3);
+  color:#fff; padding:8px 12px; border-radius:20px; font-size:12px; font-weight:700;
+}
+
+/* ===== HERO ===== */
+.hero {
+  background:linear-gradient(135deg,var(--blue) 0%,var(--blue2) 100%);
+  color:#fff; padding:24px 16px 30px; text-align:center;
+}
+.hero h1 { font-size:23px; font-weight:900; line-height:1.35; margin-bottom:10px; }
+.hero h1 span { color:var(--orange); }
+.hero p { font-size:13.5px; opacity:0.95; margin-bottom:18px; max-width:520px; margin-left:auto; margin-right:auto; }
+
+.action-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:6px; }
+.action-btn {
+  padding:16px 10px; border-radius:12px; font-size:14px; font-weight:800;
+  display:flex; flex-direction:column; align-items:center; gap:6px; line-height:1.2;
+  transition:transform 0.15s;
+}
+.action-btn:active { transform:scale(0.97); }
+.action-btn .icon { font-size:26px; }
+.action-job { background:var(--orange); color:#fff; }
+.action-hire { background:#fff; color:var(--blue); }
+
+.search-box {
+  background:#fff; border-radius:12px; padding:6px; margin-top:16px;
+  display:flex; align-items:center; box-shadow:var(--shadow-lg);
+}
+.search-box input { flex:1; border:none; outline:none; padding:13px 12px; font-size:14.5px; background:transparent; color:#333; }
+.voice-btn { background:var(--orange); color:#fff; width:46px; height:46px; border-radius:50%; font-size:20px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+
+.trust-row { display:flex; justify-content:center; flex-wrap:wrap; gap:12px; margin-top:16px; font-size:11.5px; font-weight:600; opacity:0.95; }
+.trust-row span { display:flex; align-items:center; gap:4px; }
+
+/* ===== SECTIONS ===== */
+.section { padding:18px 14px; }
+.section-head { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; gap:10px; }
+.section-title { font-size:17px; font-weight:900; color:var(--blue); line-height:1.3; }
+.section-title span { color:var(--orange); }
+.see-all { font-size:12px; font-weight:700; color:var(--orange); }
+
+/* ===== FILTER TABS ===== */
+.filter-tabs { display:flex; gap:8px; overflow-x:auto; padding-bottom:8px; margin-bottom:12px; scrollbar-width:none; }
+.filter-tabs::-webkit-scrollbar { display:none; }
+.filter-tab {
+  background:#fff; border:1.5px solid #e0e0e0; border-radius:20px;
+  padding:8px 14px; font-size:12.5px; font-weight:700; color:#555;
+  white-space:nowrap; flex-shrink:0; transition:0.2s;
+}
+.filter-tab.active { background:var(--blue); color:#fff; border-color:var(--blue); }
+
+/* ===== CATEGORIES ===== */
+.cat-scroll { display:flex; gap:10px; overflow-x:auto; padding-bottom:8px; scrollbar-width:none; }
+.cat-scroll::-webkit-scrollbar { display:none; }
+.cat-chip {
+  background:#fff; border:2px solid #e8e8e8; border-radius:14px; padding:13px 14px;
+  min-width:90px; text-align:center; flex-shrink:0; transition:0.2s;
+}
+.cat-chip:active { transform:scale(0.95); border-color:var(--orange); background:#fff8f0; }
+.cat-chip .icon { font-size:26px; display:block; margin-bottom:5px; }
+.cat-chip .label { font-size:11.5px; font-weight:800; color:#333; }
+
+/* ===== JOB CARD ===== */
+.job-card {
+  background:#fff; border-radius:var(--radius); padding:14px; margin-bottom:11px;
+  box-shadow:var(--shadow); border-left:5px solid var(--blue);
+  transition:transform 0.15s; cursor:pointer;
+}
+.job-card:active { transform:scale(0.99); }
+.job-top { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:8px; gap:10px; }
+.job-title { font-size:15px; font-weight:800; color:var(--blue); line-height:1.3; flex:1; }
+.verified-badge {
+  background:#e8f5e9; color:var(--green); font-size:10.5px; font-weight:800;
+  padding:3.5px 8px; border-radius:6px; white-space:nowrap;
+}
+.job-meta { display:flex; flex-wrap:wrap; gap:8px 12px; font-size:12.5px; color:#555; margin-bottom:11px; }
+.job-meta span { display:flex; align-items:center; gap:3px; }
+.salary { color:var(--green); font-weight:800; }
+.job-actions { display:flex; gap:8px; }
+.btn-apply {
+  flex:1; background:var(--blue); color:#fff; padding:12px; border-radius:10px;
+  font-size:14px; font-weight:800; transition:background 0.2s;
+}
+.btn-apply:active { background:var(--orange); }
+.btn-call {
+  background:var(--wa); color:#fff; width:48px; border-radius:10px;
+  font-size:20px; display:flex; align-items:center; justify-content:center;
+}
+.employer-line { font-size:11.5px; color:var(--muted); margin-bottom:8px; display:flex; align-items:center; gap:6px; }
+.employer-line strong { color:#333; }
+
+/* ===== STATS STRIP ===== */
+.stats-strip {
+  background:var(--blue); color:#fff; padding:16px 12px;
+  display:flex; justify-content:space-around; text-align:center;
+  border-radius:var(--radius); margin:0 14px 18px;
+  box-shadow:0 4px 16px rgba(13,71,161,0.3);
+}
+.stat-item .num { font-size:19px; font-weight:900; color:var(--orange); line-height:1.2; }
+.stat-item .lbl { font-size:10.5px; opacity:0.92; margin-top:3px; }
+
+/* ===== CITIES GRID ===== */
+.cities-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(105px,1fr)); gap:9px; }
+.city-chip {
+  background:#fff; padding:12px 8px; border-radius:11px; text-align:center;
+  font-size:12.5px; font-weight:700; color:#333; box-shadow:var(--shadow);
+  border:1.5px solid transparent; transition:0.2s;
+}
+.city-chip:active { border-color:var(--orange); color:var(--orange); }
+
+/* ===== FOUNDER CARD ===== */
+.founder-card {
+  background:linear-gradient(135deg,var(--blue),var(--blue2));
+  color:#fff; border-radius:16px; padding:22px 18px;
+  box-shadow:0 8px 24px rgba(13,71,161,0.35);
+}
+.founder-header { display:flex; align-items:center; gap:14px; margin-bottom:14px; }
+.founder-avatar {
+  width:66px; height:66px; border-radius:50%; background:var(--orange); color:#fff;
+  display:flex; align-items:center; justify-content:center;
+  font-size:24px; font-weight:900; flex-shrink:0; border:3px solid #fff;
+  box-shadow:0 4px 12px rgba(0,0,0,0.2);
+}
+.founder-info h4 { font-size:17px; font-weight:900; margin-bottom:4px; }
+.founder-info .role {
+  font-size:11px; background:rgba(255,255,255,0.22); display:inline-block;
+  padding:3px 10px; border-radius:12px; font-weight:700; letter-spacing:0.3px;
+}
+.founder-quote { font-size:13.5px; line-height:1.55; font-style:italic; opacity:0.96; border-left:3px solid var(--orange); padding-left:12px; }
+.founder-links { display:flex; gap:8px; margin-top:14px; flex-wrap:wrap; }
+.founder-links a {
+  background:rgba(255,255,255,0.15); border:1px solid rgba(255,255,255,0.3);
+  padding:7px 12px; border-radius:18px; font-size:11.5px; font-weight:700;
+}
+
+/* ===== TESTIMONIALS ===== */
+.community-card {
+  background:#fff; border-radius:var(--radius); padding:14px; margin-bottom:10px;
+  display:flex; align-items:flex-start; gap:12px; box-shadow:var(--shadow);
+}
+.community-avatar {
+  width:46px; height:46px; border-radius:50%; background:var(--orange); color:#fff;
+  display:flex; align-items:center; justify-content:center; font-size:22px; flex-shrink:0;
+}
+.community-text h4 { font-size:13.5px; color:var(--blue); margin-bottom:3px; font-weight:800; }
+.community-text p { font-size:12.5px; color:var(--muted); line-height:1.45; }
+.stars { color:#ffb300; font-size:11px; margin-top:4px; letter-spacing:1px; }
+
+/* ===== HOW IT WORKS ===== */
+.step-row {
+  display:flex; align-items:flex-start; gap:12px; margin-bottom:12px;
+  background:#fff; padding:14px; border-radius:12px; box-shadow:var(--shadow);
+}
+.step-num {
+  width:36px; height:36px; background:var(--orange); color:#fff; border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  font-weight:900; font-size:15px; flex-shrink:0;
+}
+.step-text h4 { font-size:14px; color:var(--blue); margin-bottom:3px; font-weight:800; }
+.step-text p { font-size:12.5px; color:var(--muted); line-height:1.4; }
+
+/* ===== FAQ ===== */
+.faq-item { background:#fff; border-radius:12px; margin-bottom:9px; box-shadow:var(--shadow); overflow:hidden; }
+.faq-q {
+  padding:14px; font-size:13.5px; font-weight:800; color:var(--blue);
+  display:flex; justify-content:space-between; align-items:center; gap:10px;
+}
+.faq-q .arrow { font-size:14px; color:var(--orange); transition:transform 0.25s; }
+.faq-item.open .arrow { transform:rotate(180deg); }
+.faq-a { max-height:0; overflow:hidden; transition:max-height 0.3s ease; }
+.faq-item.open .faq-a { max-height:300px; }
+.faq-a-inner { padding:0 14px 14px; font-size:12.5px; color:var(--muted); line-height:1.55; }
+
+/* ===== CONTACT CTA ===== */
+.contact-cta {
+  background:linear-gradient(135deg,var(--orange),var(--orange2));
+  color:#fff; border-radius:16px; padding:24px 18px; text-align:center;
+  box-shadow:0 8px 24px rgba(255,111,0,0.35);
+}
+.contact-cta h3 { font-size:17px; font-weight:900; margin-bottom:8px; }
+.contact-cta p { font-size:13px; opacity:0.95; margin-bottom:16px; }
+.contact-cta .btn-white {
+  background:#fff; color:var(--orange2); padding:12px 24px;
+  border-radius:10px; font-weight:900; font-size:14px; display:inline-flex;
+  align-items:center; gap:6px; margin:4px;
+}
+
+/* ===== FOOTER ===== */
+.site-footer { background:var(--blue); color:#fff; padding:26px 16px 96px; text-align:center; margin-top:18px; }
+.site-footer .logo-line { font-size:20px; font-weight:900; margin-bottom:6px; }
+.site-footer .logo-line span { color:var(--orange); }
+.site-footer .founder-line { font-size:12.5px; opacity:0.9; margin-bottom:14px; }
+.footer-links { display:flex; flex-wrap:wrap; justify-content:center; gap:10px 16px; margin-bottom:16px; }
+.footer-links a { font-size:12px; font-weight:600; color:#ffb066; }
+.footer-social { display:flex; justify-content:center; gap:12px; margin-bottom:16px; }
+.footer-social a {
+  width:38px; height:38px; border-radius:50%; background:rgba(255,255,255,0.12);
+  display:flex; align-items:center; justify-content:center; font-size:16px;
+}
+.site-footer .copyright { font-size:10.5px; opacity:0.7; line-height:1.6; }
+
+/* ===== BOTTOM NAV ===== */
+.bottom-nav {
+  position:fixed; bottom:0; left:0; right:0; background:#fff;
+  display:flex; justify-content:space-around; padding:8px 0 12px;
+  box-shadow:0 -2px 12px rgba(0,0,0,0.1); z-index:100;
+  border-top:1px solid #eee;
+}
+.nav-item {
+  display:flex; flex-direction:column; align-items:center; gap:2px;
+  font-size:10.5px; color:#888; font-weight:700; flex:1;
+}
+.nav-item .icon { font-size:21px; line-height:1; }
+.nav-item.active { color:var(--blue); }
+.nav-item.active .icon { color:var(--orange); }
+
+/* ===== FLOATING WHATSAPP ===== */
+.whatsapp-float {
+  position:fixed; bottom:86px; right:14px; background:var(--wa); color:#fff;
+  width:54px; height:54px; border-radius:50%;
+  display:flex; align-items:center; justify-content:center; font-size:26px;
+  box-shadow:0 6px 20px rgba(37,211,102,0.5); z-index:99;
+  animation:pulse 2s infinite;
+}
+@keyframes pulse {
+  0%,100% { box-shadow:0 6px 20px rgba(37,211,102,0.5); }
+  50% { box-shadow:0 6px 30px rgba(37,211,102,0.85); }
+}
+
+/* ===== MODAL ===== */
+.modal-overlay {
+  position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:500;
+  display:none; align-items:flex-end; justify-content:center;
+  backdrop-filter:blur(2px);
+}
+.modal-overlay.show { display:flex; animation:fadeIn 0.2s; }
+@keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
+.modal {
+  background:#fff; width:100%; max-width:520px; border-radius:20px 20px 0 0;
+  max-height:92vh; overflow-y:auto;
+  animation:slideUp 0.3s cubic-bezier(0.34,1.56,0.64,1);
+}
+@keyframes slideUp { from { transform:translateY(100%); } to { transform:translateY(0); } }
+.modal-header {
+  position:sticky; top:0; background:#fff; padding:16px 18px 12px;
+  display:flex; justify-content:space-between; align-items:center;
+  border-bottom:1px solid #eee; border-radius:20px 20px 0 0; z-index:2;
+}
+.modal-header h3 { font-size:16px; font-weight:900; color:var(--blue); }
+.modal-close {
+  background:#f0f0f0; width:34px; height:34px; border-radius:50%;
+  font-size:18px; color:#666; display:flex; align-items:center; justify-content:center;
+}
+.modal-body { padding:18px; }
+.modal-footer { padding:14px 18px 22px; border-top:1px solid #f0f0f0; }
+
+/* ===== FORM ===== */
+.form-group { margin-bottom:14px; }
+.form-group label { display:block; font-size:12.5px; font-weight:800; color:#333; margin-bottom:6px; }
+.form-group label .req { color:#d32f2f; }
+.form-input, .form-select, .form-textarea {
+  width:100%; padding:13px 14px; border:1.5px solid #ddd; border-radius:10px;
+  font-size:14.5px; font-family:inherit; background:#fafafa; outline:none;
+  transition:border 0.2s;
+}
+.form-input:focus, .form-select:focus, .form-textarea:focus { border-color:var(--blue); background:#fff; }
+.form-textarea { resize:vertical; min-height:80px; }
+.btn-primary {
+  width:100%; background:var(--blue); color:#fff; padding:15px; border-radius:11px;
+  font-size:15px; font-weight:900; transition:background 0.2s;
+}
+.btn-primary:active { background:var(--orange); }
+.btn-primary:disabled { background:#bbb; cursor:not-allowed; }
+.btn-orange { background:var(--orange); }
+.btn-orange:active { background:var(--orange2); }
+
+/* ===== OTP INPUT ===== */
+.otp-row { display:flex; gap:8px; justify-content:center; margin:16px 0; }
+.otp-input {
+  width:46px; height:54px; text-align:center; font-size:22px; font-weight:900;
+  border:2px solid #ddd; border-radius:11px; background:#fafafa; outline:none;
+  color:var(--blue);
+}
+.otp-input:focus { border-color:var(--orange); background:#fff; }
+
+/* ===== TOAST ===== */
+.toast {
+  position:fixed; top:80px; left:50%; transform:translateX(-50%) translateY(-20px);
+  background:var(--green); color:#fff; padding:12px 22px; border-radius:11px;
+  font-size:13.5px; font-weight:800; box-shadow:var(--shadow-lg);
+  z-index:9999; opacity:0; transition:0.3s; pointer-events:none;
+  max-width:90%; text-align:center;
+}
+.toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+.toast.error { background:#d32f2f; }
+
+/* ===== JOB DETAIL ===== */
+.detail-badge-row { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:14px; }
+.detail-badge {
+  background:#e8f5e9; color:var(--green); font-size:11px; font-weight:800;
+  padding:5px 10px; border-radius:7px;
+}
+.detail-section { margin-bottom:16px; }
+.detail-section h4 { font-size:13px; font-weight:900; color:var(--blue); margin-bottom:8px; text-transform:uppercase; letter-spacing:0.4px; }
+.detail-section p, .detail-section li { font-size:13.5px; color:#444; line-height:1.6; }
+.detail-section ul { padding-left:18px; }
+.detail-section li { margin-bottom:4px; }
+.employer-block {
+  background:#f8f9fa; border-radius:11px; padding:14px; margin-bottom:14px;
+  display:flex; align-items:center; gap:12px;
+}
+.employer-logo {
+  width:48px; height:48px; border-radius:11px; background:var(--blue); color:#fff;
+  display:flex; align-items:center; justify-content:center; font-size:20px; flex-shrink:0;
+  font-weight:900;
+}
+.employer-block .info h5 { font-size:14px; font-weight:900; color:#222; margin-bottom:2px; }
+.employer-block .info p { font-size:11.5px; color:var(--muted); }
+
+/* ===== RESPONSIVE ===== */
+@media (min-width:640px) {
+  body { font-size:16px; }
+  .hero h1 { font-size:30px; }
+  .section { padding:24px 22px; }
+  .cat-scroll { justify-content:center; }
+  .cities-grid { grid-template-columns:repeat(auto-fill,minmax(130px,1fr)); }
+  .modal { border-radius:20px; max-height:88vh; margin:auto; }
+  .modal-overlay { align-items:center; padding:20px; }
+  .modal-header { border-radius:20px 20px 0 0; }
+}
+@media (min-width:900px) {
+  .action-grid { max-width:520px; margin-left:auto; margin-right:auto; }
+  .search-box { max-width:560px; margin-left:auto; margin-right:auto; }
+}
+</style>
+</head>
+<body>
+
+<!-- ===== SPLASH ===== -->
+<div class="splash" id="splash">
+  <div class="logo">Hire<span>Here</span></div>
+  <div class="tag">Local Jobs. Verified Employers. 2-Minute Apply.</div>
+  <div class="loader"></div>
+</div>
+
+<!-- ===== HEADER ===== -->
+<header class="app-header">
+  <div class="header-top">
+    <div>
+      <div class="app-logo">Hire<span>Here</span></div>
+      <div class="founder-badge">👤 Founded by Sujit Shinde</div>
+    </div>
+    <div class="header-right">
+      <button class="lang-toggle" id="langToggle">🌐 हिंदी</button>
+      <button class="icon-btn" id="profileBtn" aria-label="Profile">👤</button>
+    </div>
+  </div>
+</header>
+
+<!-- ===== HERO ===== -->
+<section class="hero">
+  <h1 id="heroTitle">लोकल काम.<br><span>वेरिफाइड मालिक.</span><br>2 मिनट में अप्लाई.</h1>
+  <p id="heroSub">ना रिज़्यूमे, ना इंग्लिश, ना फीस — सिर्फ मोबाइल नंबर से काम पाओ।</p>
+
+  <div class="action-grid">
+    <button class="action-btn action-job" onclick="openLogin('seeker')">
+      <span class="icon">📱</span>
+      <span id="btnJobTxt">मुझे काम चाहिए</span>
+    </button>
+    <button class="action-btn action-hire" onclick="openLogin('employer')">
+      <span class="icon">🏢</span>
+      <span id="btnHireTxt">मुझे वर्कर चाहिए</span>
+    </button>
+  </div>
+
+  <div class="search-box">
+    <input type="text" id="searchInput" placeholder="अपना शहर लिखें या बोलें...">
+    <button class="voice-btn" onclick="startVoice()" aria-label="Voice search">🎤</button>
+  </div>
+
+  <div class="trust-row">
+    <span>✅ 100% फ्री</span>
+    <span>🔒 वेरिफाइड मालिक</span>
+    <span>🗣️ 12 भाषाएँ</span>
+  </div>
+</section>
+
+<!-- ===== CATEGORIES ===== -->
+<section class="section">
+  <div class="section-head">
+    <h2 class="section-title" id="catTitle">क्या <span>काम</span> चाहिए?</h2>
+    <a class="see-all" href="#jobs">सभी →</a>
+  </div>
+  <div class="cat-scroll" id="catScroll">
+    <div class="cat-chip" onclick="filterJobs('driver')"><span class="icon">🚗</span><span class="label">ड्राइवर</span></div>
+    <div class="cat-chip" onclick="filterJobs('delivery')"><span class="icon">📦</span><span class="label">डिलीवरी</span></div>
+    <div class="cat-chip" onclick="filterJobs('security')"><span class="icon">🛡️</span><span class="label">सिक्योरिटी</span></div>
+    <div class="cat-chip" onclick="filterJobs('electrician')"><span class="icon">⚡</span><span class="label">इलेक्ट्रीशियन</span></div>
+    <div class="cat-chip" onclick="filterJobs('mason')"><span class="icon">🔧</span><span class="label">मिस्त्री</span></div>
+    <div class="cat-chip" onclick="filterJobs('cleaning')"><span class="icon">🧹</span><span class="label">सफाई</span></div>
+    <div class="cat-chip" onclick="filterJobs('factory')"><span class="icon">🏭</span><span class="label">फैक्ट्री</span></div>
+    <div class="cat-chip" onclick="filterJobs('retail')"><span class="icon">🛒</span><span class="label">दुकान</span></div>
+    <div class="cat-chip" onclick="filterJobs('cook')"><span class="icon">👨‍🍳</span><span class="label">कुक</span></div>
+    <div class="cat-chip" onclick="filterJobs('tailor')"><span class="icon">✂️</span><span class="label">दर्जी</span></div>
+  </div>
+</section>
+
+<!-- ===== STATS ===== -->
+<div class="stats-strip">
+  <div class="stat-item"><div class="num">5L+</div><div class="lbl">वर्कर</div></div>
+  <div class="stat-item"><div class="num">50K+</div><div class="lbl">काम मिला</div></div>
+  <div class="stat-item"><div class="num">20K+</div><div class="lbl">वेरिफाइड मालिक</div></div>
+  <div class="stat-item"><div class="num">50+</div><div class="lbl">शहर</div></div>
+</div>
+
+<!-- ===== JOBS ===== -->
+<section class="section" id="jobs">
+  <div class="section-head">
+    <h2 class="section-title" id="jobsTitle">आपके <span>शहर</span> के नए काम</h2>
+    <a class="see-all" href="#">सभी →</a>
+  </div>
+
+  <div class="filter-tabs" id="filterTabs">
+    <button class="filter-tab active" onclick="filterJobs('all', this)">सभी</button>
+    <button class="filter-tab" onclick="filterJobs('driver', this)">ड्राइवर</button>
+    <button class="filter-tab" onclick="filterJobs('delivery', this)">डिलीवरी</button>
+    <button class="filter-tab" onclick="filterJobs('security', this)">सिक्योरिटी</button>
+    <button class="filter-tab" onclick="filterJobs('factory', this)">फैक्ट्री</button>
+    <button class="filter-tab" onclick="filterJobs('electrician', this)">इलेक्ट्रीशियन</button>
+  </div>
+
+  <div id="jobList"></div>
+</section>
+
+<!-- ===== CITIES ===== -->
+<section class="section">
+  <div class="section-head">
+    <h2 class="section-title">हम कहाँ <span>हैं?</span></h2>
+  </div>
+  <div class="cities-grid">
+    <div class="city-chip">कोयंबटूर</div>
+    <div class="city-chip">इंदौर</div>
+    <div class="city-chip">जयपुर</div>
+    <div class="city-chip">सूरत</div>
+    <div class="city-chip">लुधियाना</div>
+    <div class="city-chip">नागपुर</div>
+    <div class="city-chip">तिरुपुर</div>
+    <div class="city-chip">लखनऊ</div>
+    <div class="city-chip">भोपाल</div>
+    <div class="city-chip">पुणे</div>
+    <div class="city-chip">अहमदाबाद</div>
+    <div class="city-chip">कोलकाता</div>
+  </div>
+</section>
+
+<!-- ===== FOUNDER ===== -->
+<section class="section">
+  <div class="section-head">
+    <h2 class="section-title">हमारे <span>संस्थापक</span></h2>
+  </div>
+  <div class="founder-card">
+    <div class="founder-header">
+      <div class="founder-avatar">SS</div>
+      <div class="founder-info">
+        <h4>Sujit Shinde</h4>
+        <div class="role">Founder & CEO</div>
+      </div>
+    </div>
+    <p class="founder-quote">"हर मेहनती को उसके घर के पास इज़्ज़त की कमाई मिले — यही HireHere का सपना है।"</p>
+    <div class="founder-links">
+      <a href="mailto:sujit@hirehere.in">📧 Email</a>
+      <a href="https://wa.me/919999999999">💬 WhatsApp</a>
+      <a href="#">🔗 LinkedIn</a>
+    </div>
+  </div>
+</section>
+
+<!-- ===== TESTIMONIALS ===== -->
+<section class="section">
+  <div class="section-head">
+    <h2 class="section-title">आपके <span>भरोसे</span> की बात</h2>
+  </div>
+
+  <div class="community-card">
+    <div class="community-avatar">👷</div>
+    <div class="community-text">
+      <h4>रमेश — कोयंबटूर</h4>
+      <p>"HireHere से 3 दिन में फैक्ट्री में काम मिल गया। कोई फीस नहीं लगी।"</p>
+      <div class="stars">⭐⭐⭐⭐⭐</div>
+    </div>
+  </div>
+
+  <div class="community-card">
+    <div class="community-avatar">👩‍🍳</div>
+    <div class="community-text">
+      <h4>सुनीता — इंदौर</h4>
+      <p>"घर के पास ही काम मिला। बच्चों की देखभाल भी हो रही है।"</p>
+      <div class="stars">⭐⭐⭐⭐⭐</div>
+    </div>
+  </div>
+
+  <div class="community-card">
+    <div class="community-avatar">🏭</div>
+    <div class="community-text">
+      <h4>शर्मा जी — फैक्ट्री मालिक</h4>
+      <p>"10 वर्कर 48 घंटे में मिल गए। सारे वेरिफाइड थे।"</p>
+      <div class="stars">⭐⭐⭐⭐⭐</div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== HOW IT WORKS ===== -->
+<section class="section">
+  <div class="section-head">
+    <h2 class="section-title">कैसे <span>काम करता</span> है?</h2>
+  </div>
+
+  <div class="step-row">
+    <div class="step-num">1</div>
+    <div class="step-text">
+      <h4>मोबाइल नंबर डालो</h4>
+      <p>OTP से लॉगिन — कोई रिज़्यूमे नहीं, कोई फॉर्म नहीं।</p>
+    </div>
+  </div>
+
+  <div class="step-row">
+    <div class="step-num">2</div>
+    <div class="step-text">
+      <h4>WhatsApp पे काम आएगा</h4>
+      <p>आपके शहर के वेरिफाइड काम सीधे WhatsApp पर।</p>
+    </div>
+  </div>
+
+  <div class="step-row">
+    <div class="step-num">3</div>
+    <div class="step-text">
+      <h4>इंटरव्यू देकर काम पाओ</h4>
+      <p>पास के मालिक से मिलो, काम शुरू करो।</p>
+    </div>
+  </div>
+</section>
+
+<!-- ===== FAQ ===== -->
+<section class="section">
+  <div class="section-head">
+    <h2 class="section-title">अक्सर <span>पूछे</span> जाने वाले सवाल</h2>
+  </div>
+
+  <div class="faq-item">
+    <div class="faq-q" onclick="toggleFaq(this)"><span>क्या HireHere से काम ढूंढना फ्री है?</span><span class="arrow">▼</span></div>
+    <div class="faq-a"><div class="faq-a-inner">हाँ, वर्कर के लिए 100% फ्री है। कोई रजिस्ट्रेशन फीस नहीं, कोई कमीशन नहीं। सिर्फ मोबाइल नंबर से OTP लॉगिन करें और अप्लाई करें।</div></div>
+  </div>
+
+  <div class="faq-item">
+    <div class="faq-q" onclick="toggleFaq(this)"><span>मुझे इंग्लिश नहीं आती, क्या मैं अप्लाई कर सकता हूँ?</span><span class="arrow">▼</span></div>
+    <div class="faq-a"><div class="faq-a-inner">बिल्कुल! HireHere हिंदी, तमिल, तेलुगु, बंगाली সহ 12 भाषाओं में उपलब्ध है। ऊपर भाषा बदलें बटन दबाकर अपनी भाषा चुनें।</div></div>
+  </div>
+
+  <div class="faq-item">
+    <div class="faq-q" onclick="toggleFaq(this)"><span>मालिक वेरिफाइड कैसे होते हैं?</span><span class="arrow">▼</span></div>
+    <div class="faq-a"><div class="faq-a-inner">हर मालिक का GST, फोन नंबर और कंपनी का पता वेरिफाई किया जाता है। सिर्फ वेरिफाइड मालिक ही जॉब पोस्ट कर सकते हैं।</div></div>
+  </div>
+
+  <div class="faq-item">
+    <div class="faq-q" onclick="toggleFaq(this)"><span>मालिक को कितना पैसा लगता है?</span><span class="arrow">▼</span></div>
+    <div class="faq-a"><div class="faq-a-inner">सिर्फ ₹699 प्रति जॉब पोस्ट। पहला पोस्ट फ्री। कोई हिडन चार्ज नहीं।</div></div>
+  </div>
+
+  <div class="faq-item">
+    <div class="faq-q" onclick="toggleFaq(this)"><span>क्या मुझे ऐप डाउनलोड करना पड़ेगा?</span><span class="arrow">▼</span></div>
+    <div class="faq-a"><div class="faq-a-inner">नहीं। HireHere वेबसाइट मोबाइल पर ऐप की तरह काम करती है। बस hirehere.in खोलें और शुरू करें।</div></div>
+  </div>
+
+  <div class="faq-item">
+    <div class="faq-q" onclick="toggleFaq(this)"><span>शिकायत कैसे करें?</span><span class="arrow">▼</span></div>
+    <div class="faq-a"><div class="faq-a-inner">नीचे दिए WhatsApp बटन पर क्लिक करें या sujit@hirehere.in पर ईमेल करें। हम 24 घंटे में जवाब देते हैं।</div></div>
+  </div>
+</section>
+
+<!-- ===== CONTACT ===== -->
+<section class="section">
+  <div class="contact-cta">
+    <h3>कोई सवाल है?</h3>
+    <p>Sujit Shinde की टीम से सीधे बात करें — WhatsApp या कॉल पर।</p>
+    <a href="https://wa.me/919999999999" class="btn-white">💬 WhatsApp करें</a>
+    <a href="tel:+919999999999" class="btn-white">📞 कॉल करें</a>
+  </div>
+</section>
+
+<!-- ===== FOOTER ===== -->
+<footer class="site-footer">
+  <div class="logo-line">Hire<span>Here</span></div>
+  <div class="founder-line">Founded by <strong>Sujit Shinde</strong></div>
+
+  <div class="footer-links">
+    <a href="#">About</a>
+    <a href="#">Contact</a>
+    <a href="#">Privacy</a>
+    <a href="#">Terms</a>
+    <a href="#">Employer Login</a>
+    <a href="#">Blog</a>
+  </div>
+
+  <div class="footer-social">
+    <a href="#" aria-label="WhatsApp">💬</a>
+    <a href="#" aria-label="Facebook">f</a>
+    <a href="#" aria-label="Instagram">📷</a>
+    <a href="#" aria-label="YouTube">▶</a>
+  </div>
+
+  <div class="copyright">
+    © 2026 HireHere Technologies Pvt Ltd. Made in India 🇮🇳<br>
+    Founder: Sujit Shinde | hirehere.in
+  </div>
+</footer>
+
+<!-- ===== FLOATING WHATSAPP ===== -->
+<a href="https://wa.me/919999999999?text=नमस्ते%20HireHere%20-%20मुझे%20काम%20चाहिए" class="whatsapp-float" aria-label="WhatsApp">💬</a>
+
+<!-- ===== BOTTOM NAV ===== -->
+<nav class="bottom-nav">
+  <a href="#" class="nav-item active" onclick="scrollTop(event)"><span class="icon">🏠</span><span>होम</span></a>
+  <a href="#jobs" class="nav-item" onclick="setActiveNav(this, event)"><span class="icon">🔍</span><span>काम</span></a>
+  <a href="#" class="nav-item" onclick="openLogin('seeker'); setActiveNav(this, event); return false;"><span class="icon">📋</span><span>अप्लाई</span></a>
+  <a href="#" class="nav-item" onclick="openLogin('seeker'); setActiveNav(this, event); return false;"><span class="icon">👤</span><span>प्रोफ़ाइल</span></a>
+</nav>
+
+<!-- ===== LOGIN MODAL ===== -->
+<div class="modal-overlay" id="loginModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="loginTitle">वर्कर लॉगिन</h3>
+      <button class="modal-close" onclick="closeModal('loginModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div id="loginStep1">
+        <p style="font-size:13.5px;color:#666;margin-bottom:14px;">मोबाइल नंबर डालें — OTP भेजा जाएगा।</p>
+        <div class="form-group">
+          <label>मोबाइल नंबर <span class="req">*</span></label>
+          <input type="tel" class="form-input" id="mobileInput" placeholder="10-डिजिट नंबर" maxlength="10" inputmode="numeric">
+        </div>
+        <button class="btn-primary" id="sendOtpBtn" onclick="sendOtp()">OTP भेजें →</button>
+      </div>
+
+      <div id="loginStep2" style="display:none;">
+        <p style="font-size:13.5px;color:#666;margin-bottom:8px;">OTP डालें (डेमो के लिए: 123456)</p>
+        <div class="otp-row">
+          <input class="otp-input" maxlength="1" inputmode="numeric">
+          <input class="otp-input" maxlength="1" inputmode="numeric">
+          <input class="otp-input" maxlength="1" inputmode="numeric">
+          <input class="otp-input" maxlength="1" inputmode="numeric">
+          <input class="otp-input" maxlength="1" inputmode="numeric">
+          <input class="otp-input" maxlength="1" inputmode="numeric">
+        </div>
+        <p style="font-size:11.5px;color:#888;text-align:center;margin-bottom:14px;">नंबर बदलना है? <a href="#" onclick="resetLogin(); return false;" style="color:var(--orange);font-weight:700;">वापस जाएँ</a></p>
+        <button class="btn-primary btn-orange" onclick="verifyOtp()">वेरिफाई करें ✓</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== JOB DETAIL MODAL ===== -->
+<div class="modal-overlay" id="jobModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="jobModalTitle">Job Title</h3>
+      <button class="modal-close" onclick="closeModal('jobModal')">✕</button>
+    </div>
+    <div class="modal-body" id="jobModalBody"></div>
+    <div class="modal-footer">
+      <button class="btn-primary btn-orange" onclick="applyJob()">📱 2 मिनट में अप्लाई करें</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== POST JOB MODAL (Employer) ===== -->
+<div class="modal-overlay" id="postJobModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>जॉब पोस्ट करें</h3>
+      <button class="modal-close" onclick="closeModal('postJobModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label>जॉब टाइटल <span class="req">*</span></label>
+        <input type="text" class="form-input" placeholder="जैसे: CNC मशीन ऑपरेटर">
+      </div>
+      <div class="form-group">
+        <label>कंपनी का नाम <span class="req">*</span></label>
+        <input type="text" class="form-input" placeholder="जैसे: शर्मा इंडस्ट्रीज़">
+      </div>
+      <div class="form-group">
+        <label>शहर <span class="req">*</span></label>
+        <select class="form-select">
+          <option>कोयंबटूर</option>
+          <option>इंदौर</option>
+          <option>जयपुर</option>
+          <option>सूरत</option>
+          <option>लुधियाना</option>
+          <option>अन्य</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>सैलरी (प्रति महीना) <span class="req">*</span></label>
+        <input type="text" class="form-input" placeholder="जैसे: 15000-20000">
+      </div>
+      <div class="form-group">
+        <label>काम का विवरण</label>
+        <textarea class="form-textarea" placeholder="क्या काम करना है, टाइमिंग, ज़रूरी skills..."></textarea>
+      </div>
+      <div class="form-group">
+        <label>WhatsApp नंबर <span class="req">*</span></label>
+        <input type="tel" class="form-input" placeholder="10-डिजिट" maxlength="10" inputmode="numeric">
+      </div>
+      <button class="btn-primary btn-orange" onclick="submitJob()">₹699 में पोस्ट करें →</button>
+      <p style="font-size:11px;color:#888;text-align:center;margin-top:10px;">पहला जॉब पोस्ट पूरी तरह फ्री है।</p>
+    </div>
+  </div>
+</div>
+
+<!-- ===== TOAST ===== -->
+<div class="toast" id="toast"></div>
+
+<!-- ===== JAVASCRIPT ===== -->
+<script>
+/* ============ SPLASH ============ */
+window.addEventListener('load', () => {
+  setTimeout(() => document.getElementById('splash').classList.add('hide'), 900);
+});
+
+/* ============ LANGUAGE ============ */
+const translations = {
+  hi: {
+    heroTitle:'लोकल काम.<br><span>वेरिफाइड मालिक.</span><br>2 मिनट में अप्लाई.',
+    heroSub:'ना रिज़्यूमे, ना इंग्लिश, ना फीस — सिर्फ मोबाइल नंबर से काम पाओ।',
+    jobBtn:'मुझे काम चाहिए',
+    hireBtn:'मुझे वर्कर चाहिए',
+    searchPh:'अपना शहर लिखें या बोलें...',
+    catTitle:'क्या <span>काम</span> चाहिए?',
+    jobsTitle:'आपके <span>शहर</span> के नए काम',
+    apply:'📱 2 मिनट में अप्लाई',
+    filterAll:'सभी',
+    lang:'🌐 हिंदी'
+  },
+  en: {
+    heroTitle:'Local Jobs.<br><span>Verified Employers.</span><br>2-Minute Apply.',
+    heroSub:'No resume. No English. No fees. Just your mobile number.',
+    jobBtn:'I Need a Job',
+    hireBtn:'I Want to Hire',
+    searchPh:'Type or speak your city...',
+    catTitle:'What <span>work</span> do you need?',
+    jobsTitle:'New Jobs in <span>Your City</span>',
+    apply:'📱 Apply in 2 Minutes',
+    filterAll:'All',
+    lang:'🌐 EN'
+  }
+};
+let currentLang = 'hi';
+document.getElementById('langToggle').addEventListener('click', () => {
+  currentLang = currentLang === 'hi' ? 'en' : 'hi';
+  const t = translations[currentLang];
+  document.getElementById('heroTitle').innerHTML = t.heroTitle;
+  document.getElementById('heroSub').textContent = t.heroSub;
+  document.getElementById('btnJobTxt').textContent = t.jobBtn;
+  document.getElementById('btnHireTxt').textContent = t.hireBtn;
+  document.getElementById('searchInput').placeholder = t.searchPh;
+  document.getElementById('catTitle').innerHTML = t.catTitle;
+  document.getElementById('jobsTitle').innerHTML = t.jobsTitle;
+  document.getElementById('langToggle').textContent = t.lang;
+  document.querySelectorAll('.btn-apply').forEach(b => b.textContent = t.apply);
+  renderJobs();
+});
+
+/* ============ JOBS DATA ============ */
+const jobs = [
+  { id:1, cat:'factory', title:'CNC मशीन ऑपरेटर', company:'शर्मा इंडस्ट्रीज़', city:'कोयंबटूर', salary:'₹18,000–22,000/महीना', type:'पूर्णकालिक', exp:'2+ साल', shift:'डे शिफ्ट', verified:true, posted:'2 घंटे पहले', phone:'919999999901', desc:'CNC मशीन चलाने का अनुभव चाहिए। ITI पास प्राथमिकता।', requirements:['CNC मशीन का अनुभव','ITI डिप्लोमा','12वीं पास','डे शिफ्ट में काम'] },
+  { id:2, cat:'delivery', title:'डिलीवरी बॉय (2-व्हीलर)', company:'QuickMart', city:'इंदौर', salary:'₹15,000 + इंसेंटिव', type:'पूर्णकालिक', exp:'फ्रेशर', shift:'फ्लेक्सिबल', verified:true, posted:'5 घंटे पहले', phone:'919999999902', desc:'अपनी 2-व्हीलर और ड्राइविंग लाइसेंस ज़रूरी।', requirements:['2-व्हीलर', 'ड्राइविंग लाइसेंस', 'स्मार्टफोन', 'स्थानीय पता'] },
+  { id:3, cat:'security', title:'सिक्योरिटी गार्ड — नाइट शिफ्ट', company:'सुरक्षा सर्विसेज़', city:'जयपुर', salary:'₹14,000/महीना', type:'पूर्णकालिक', exp:'फ्रेशर', shift:'नाइट', verified:true, posted:'1 दिन पहले', phone:'919999999903', desc:'रात की ड्यूटी के लिए फिट और ईमानदार उम्मीदवार।', requirements:['10वीं पास','फिज़िकली फिट','ईमानदार','नाइट शिफ्ट'] },
+  { id:4, cat:'factory', title:'वेयरहाउस पिकर / पैकर', company:'LogiPro', city:'सूरत', salary:'₹16,500/महीना', type:'पूर्णकालिक', exp:'फ्रेशर', shift:'डे', verified:true, posted:'1 दिन पहले', phone:'919999999904', desc:'वेयरहाउस में सामान पैक करना और सॉर्ट करना।', requirements:['10वीं पास','बेसिक मैथ','फिज़िकली फिट'] },
+  { id:5, cat:'driver', title:'कैब ड्राइवर', company:'CityRide', city:'लुधियाना', salary:'₹20,000 + कमीशन', type:'पूर्णकालिक', exp:'1+ साल', shift:'फ्लेक्सिबल', verified:true, posted:'3 घंटे पहले', phone:'919999999905', desc:'कैब चलाने के लिए अनुभवी ड्राइवर चाहिए।', requirements:['कमर्शियल लाइसेंस','1+ साल अनुभव','स्थानीय जानकारी'] },
+  { id:6, cat:'electrician', title:'इलेक्ट्रीशियन', company:'VoltFix', city:'नागपुर', salary:'₹22,000/महीना', type:'पूर्णकालिक', exp:'3+ साल', shift:'डे', verified:true, posted:'4 घंटे पहले', phone:'919999999906', desc:'घरेलू और कमर्शियल वायरिंग का अनुभव ज़रूरी।', requirements:['ITI इलेक्ट्रीशियन','3+ साल अनुभव','वायरिंग नॉलेज'] },
+  { id:7, cat:'delivery', title:'फूड डिलीवरी पार्टनर', company:'FoodExpress', city:'भोपाल', salary:'₹12,000 + टिप्स', type:'पार्ट-टाइम', exp:'फ्रेशर', shift:'फ्लेक्सिबल', verified:true, posted:'6 घंटे पहले', phone:'919999999907', desc:'फूड डिलीवरी के लिए 2-व्हीलर ज़रूरी।', requirements:['2-व्हीलर','स्मार्टफोन','लाइसेंस'] },
+  { id:8, cat:'cleaning', title:'हाउसकीपिंग स्टाफ', company:'CleanPro', city:'पुणे', salary:'₹13,500/महीना', type:'पूर्णकालिक', exp:'फ्रेशर', shift:'डे', verified:true, posted:'8 घंटे पहले', phone:'919999999908', desc:'ऑफिस और होटल की सफाई का काम।', requirements:['10वीं पास','फिज़िकली फिट','पंक्चुअल'] },
+  { id:9, cat:'retail', title:'शॉप सेल्समैन', company:'RetailHub', city:'अहमदाबाद', salary:'₹14,000 + कमीशन', type:'पूर्णकालिक', exp:'फ्रेशर', shift:'डे', verified:true, posted:'2 घंटे पहले', phone:'919999999909', desc:'कस्टमर हैंडलिंग और बिक्री का काम।', requirements:['12वीं पास','कम्युनिकेशन स्किल','बेसिक कंप्यूटर'] },
+  { id:10, cat:'factory', title:'असेम्बली लाइन वर्कर', company:'Auto Parts Ltd', city:'कोयंबटूर', salary:'₹17,000/महीना', type:'पूर्णकालिक', exp:'फ्रेशर', shift:'रोटेशनल', verified:true, posted:'1 घंटा पहले', phone:'919999999910', desc:'ऑटो पार्ट्स असेम्बली का काम।', requirements:['10वीं पास','फिज़िकली फिट','शिफ्ट में काम'] }
+];
+
+/* ============ RENDER JOBS ============ */
+let activeFilter = 'all';
+function renderJobs() {
+  const container = document.getElementById('jobList');
+  const filtered = activeFilter === 'all' ? jobs : jobs.filter(j => j.cat === activeFilter);
+  if (filtered.length === 0) {
+    container.innerHTML = '<p style="text-align:center;padding:30px;color:#888;font-size:14px;">इस श्रेणी में अभी कोई काम नहीं है।</p>';
+    return;
+  }
+  container.innerHTML = filtered.map(j => `
+    <div class="job-card" onclick="openJob(${j.id})">
+      <div class="job-top">
+        <div class="job-title">${j.title}</div>
+        ${j.verified ? '<div class="verified-badge">✅ वेरिफाइड</div>' : ''}
+      </div>
+      <div class="employer-line">🏢 <strong>${j.company}</strong> • ${j.posted}</div>
+      <div class="job-meta">
+        <span>📍 ${j.city}</span>
+        <span class="salary">💰 ${j.salary}</span>
+        <span>🕒 ${j.shift}</span>
+      </div>
+      <div class="job-actions" onclick="event.stopPropagation()">
+        <button class="btn-apply" onclick="openJob(${j.id})">${translations[currentLang].apply}</button>
+        <a href="tel:+${j.phone}" class="btn-call" aria-label="Call">📞</a>
+      </div>
+    </div>
+  `).join('');
+}
+
+/* ============ FILTER ============ */
+function filterJobs(cat, btn) {
+  activeFilter = cat;
+  document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  else {
+    const idx = ['all','driver','delivery','security','factory','electrician'].indexOf(cat);
+    const tabs = document.querySelectorAll('.filter-tab');
+    if (tabs[idx]) tabs[idx].classList.add('active');
+  }
+  renderJobs();
+  document.getElementById('jobs').scrollIntoView({ behavior:'smooth' });
+}
+
+/* ============ JOB DETAIL ============ */
+let currentJob = null;
+function openJob(id) {
+  const j = jobs.find(x => x.id === id);
+  if (!j) return;
+  currentJob = j;
+  document.getElementById('jobModalTitle').textContent = j.title;
+  document.getElementById('jobModalBody').innerHTML = `
+    <div class="detail-badge-row">
+      ${j.verified ? '<span class="detail-badge">✅ वेरिफाइड मालिक</span>' : ''}
+      <span class="detail-badge">🕒 ${j.posted}</span>
+      <span class="detail-badge">${j.type}</span>
+    </div>
+    <div class="employer-block">
+      <div class="employer-logo">${j.company.charAt(0)}</div>
+      <div class="info">
+        <h5>${j.company}</h5>
+        <p>📍 ${j.city} • 💰 ${j.salary}</p>
+      </div>
+    </div>
+    <div class="detail-section">
+      <h4>काम का विवरण</h4>
+      <p>${j.desc}</p>
+    </div>
+    <div class="detail-section">
+      <h4>ज़रूरी योग्यता</h4>
+      <ul>${j.requirements.map(r => `<li>${r}</li>`).join('')}</ul>
+    </div>
+    <div class="detail-section">
+      <h4>शिफ्ट</h4>
+      <p>${j.shift} • अनुभव: ${j.exp}</p>
+    </div>
+  `;
+  openModal('jobModal');
+}
+
+function applyJob() {
+  closeModal('jobModal');
+  openLogin('seeker');
+}
+
+/* ============ MODAL HELPERS ============ */
+function openModal(id) {
+  document.getElementById(id).classList.add('show');
+  document.body.style.overflow = 'hidden';
+}
+function closeModal(id) {
+  document.getElementById(id).classList.remove('show');
+  document.body.style.overflow = '';
+}
+document.querySelectorAll('.modal-overlay').forEach(el => {
+  el.addEventListener('click', e => { if (e.target === el) closeModal(el.id); });
+});
+
+/* ============ LOGIN ============ */
+function openLogin(role) {
+  document.getElementById('loginTitle').textContent = role === 'employer' ? 'मालिक लॉगिन' : 'वर्कर लॉगिन';
+  resetLogin();
+  openModal('loginModal');
+  if (role === 'employer') {
+    setTimeout(() => {
+      closeModal('loginModal');
+      openModal('postJobModal');
+    }, 400);
+  }
+}
+
+function sendOtp() {
+  const m = document.getElementById('mobileInput').value.trim();
+  if (!/^[6-9]\d{9}$/.test(m)) {
+    showToast('सही 10-डिजिट मोबाइल नंबर डालें', true);
+    return;
+  }
+  document.getElementById('loginStep1').style.display = 'none';
+  document.getElementById('loginStep2').style.display = 'block';
+  document.querySelector('.otp-input').focus();
+  showToast('OTP भेजा गया ✓ (डेमो: 123456)');
+}
+
+function resetLogin() {
+  document.getElementById('loginStep1').style.display = 'block';
+  document.getElementById('loginStep2').style.display = 'none';
+  document.getElementById('mobileInput').value = '';
+  document.querySelectorAll('.otp-input').forEach(i => i.value = '');
+}
+
+function verifyOtp() {
+  const otp = Array.from(document.querySelectorAll('.otp-input')).map(i => i.value).join('');
+  if (otp.length !== 6) {
+    showToast('6-डिजिट OTP डालें', true);
+    return;
+  }
+  closeModal('loginModal');
+  showToast('लॉगिन सफल! ✓ स्वागत है');
+  resetLogin();
+}
+
+/* OTP auto-focus */
+document.querySelectorAll('.otp-input').forEach((inp, idx, arr) => {
+  inp.addEventListener('input', () => {
+    if (inp.value && idx < arr.length - 1) arr[idx + 1].focus();
+  });
+  inp.addEventListener('keydown', e => {
+    if (e.key === 'Backspace' && !inp.value && idx > 0) arr[idx - 1].focus();
+  });
+});
+
+/* ============ POST JOB ============ */
+function submitJob() {
+  showToast('जॉब पोस्ट हो गया! ✓ (डेमो)');
+  setTimeout(() => closeModal('postJobModal'), 1200);
+}
+
+/* ============ FAQ ============ */
+function toggleFaq(el) {
+  const item = el.parentElement;
+  const wasOpen = item.classList.contains('open');
+  document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('open'));
+  if (!wasOpen) item.classList.add('open');
+}
+
+/* ============ VOICE SEARCH ============ */
+function startVoice() {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) {
+    showToast('आपके ब्राउज़र में वॉइस सर्च उपलब्ध नहीं है', true);
+    return;
+  }
+  const rec = new SR();
+  rec.lang = currentLang === 'hi' ? 'hi-IN' : 'en-IN';
+  rec.onresult = e => {
+    document.getElementById('searchInput').value = e.results[0][0].transcript;
+    showToast('सुना: ' + e.results[0][0].transcript);
+  };
+  rec.onerror = () => showToast('आवाज़ नहीं पकड़ पाए, दोबारा कोशिश करें', true);
+  rec.start();
+  showToast('🎤 बोलिए...');
+}
+
+/* ============ NAV ============ */
+function setActiveNav(el, e) {
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  el.classList.add('active');
+}
+function scrollTop(e) {
+  e.preventDefault();
+  window.scrollTo({ top:0, behavior:'smooth' });
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.querySelector('.nav-item').classList.add('active');
+}
+
+/* ============ TOAST ============ */
+let toastTimer;
+function showToast(msg, isError = false) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show' + (isError ? ' error' : '');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2600);
+}
+
+/* ============ INIT ============ */
+renderJobs();
+
+/* Header profile button */
+document.getElementById('profileBtn').addEventListener('click', () => openLogin('seeker'));
+</script>
+</body>
+</html>
