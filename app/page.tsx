@@ -1,141 +1,82 @@
 'use client';
+
 import React, { useState, useEffect } from 'react';
-import { supabase } from '@/lib/supabase';
+import { createClient } from '@supabase/supabase-js';
 import Link from 'next/link';
 
-// Professional Translation Dictionary
-const TRANSLATIONS = {
-  hi: {
-    workerRegister: '👤 Worker Register',
-    jobPost: '+ Job Post Karein',
-    heroTitle: 'अपनी पसंद की नौकरी पाएं,',
-    heroTitleHighlight: 'सीधे रिक्रूटर्स से जुड़ें',
-    heroTitleSuffix: '',
-    heroSubtitle: 'बिना किसी मिडलमैन या फीस के — वेरिफाइड कंपनियों में अपना ड्रीम जॉब पाएं सिर्फ 2 मिनट में।',
-    wantJob: 'मुझे काम चाहिए',
-    wantWorker: 'मुझे वर्कर चाहिए',
-    searchPlaceholder: 'अपना शहर लिखें (उदा. Pune, Mumbai, Delhi)...',
-    searchBtn: '🔍 Search',
-    trust1: '✅ 100% वेरिफाइड जॉब्स',
-    trust2: '🔒 ज़ीरो कंसल्टेंसी फीस',
-    trust3: '⚡ डायरेक्ट HR कॉल और चैट',
-    catQuestion: 'किस प्रकार की',
-    catQuestionHighlight: 'जॉब',
-    catQuestionSuffix: 'चाहिए?',
-    workersStat: 'रजिस्टर्ड वर्कर',
-    jobsProvidedStat: 'सफल भर्तियां',
-    verifiedEmployersStat: 'वेरिफाइड कंपनियां',
-    recentJobs: 'आपके',
-    cityHighlight: 'शहर',
-    recentJobsSuffix: 'की नई नौकरियां',
-    allJobs: 'सभी नौकरियां',
-    loadingText: 'नौकरियां लोड हो रही हैं...',
-    noJobsFound: 'कोई जॉब नहीं मिली।',
-    noJobsSub: "पहली जॉब लिस्ट करने के लिए ऊपर '+ Job Post Karein' पर क्लिक करें।",
-    verifiedBadge: '✅ Verified Company',
-    monthSalary: '/महीना',
-    applyCallBtn: '📞 Apply / Direct Call',
-    navHome: 'होम',
-    navJobs: 'नौकरियां',
-    navPostJob: 'जॉब पोस्ट',
-    quote: '"हर मेहनती नागरिक को उनके शहर में ही इज़्ज़तदार रोज़गार दिलाना HireHere का मुख्य उद्देश्य है।"',
-    categories: [
-      { id: 'driver', label: 'ड्राइवर', icon: '🚗' },
-      { id: 'delivery', label: 'डिलीवरी', icon: '📦' },
-      { id: 'security', label: 'सिक्योरिटी', icon: '🛡️' },
-      { id: 'electrician', label: 'इलेक्ट्रीशियन', icon: '⚡' },
-      { id: 'cleaning', label: 'हाउसकीपिंग', icon: '🧹' },
-      { id: 'factory', label: 'फैक्ट्री वर्कर', icon: '🏭' },
-    ],
-  },
-  en: {
-    workerRegister: '👤 Worker Register',
-    jobPost: '+ Post a Job',
-    heroTitle: 'Land Your Dream Job,',
-    heroTitleHighlight: 'Connect With Top Employers',
-    heroTitleSuffix: '',
-    heroSubtitle: 'No middlemen, zero fees — apply to verified companies in under 2 minutes and get hired fast.',
-    wantJob: 'I Need a Job',
-    wantWorker: 'I Need Workers',
-    searchPlaceholder: 'Type your city (e.g. Pune, Mumbai, Delhi)...',
-    searchBtn: '🔍 Search',
-    trust1: '✅ 100% Verified Jobs',
-    trust2: '🔒 Zero Consultancy Fee',
-    trust3: '⚡ Direct HR Call & Chat',
-    catQuestion: 'Which',
-    catQuestionHighlight: 'Job Category',
-    catQuestionSuffix: 'do you want?',
-    workersStat: 'Registered Workers',
-    jobsProvidedStat: 'Jobs Placed',
-    verifiedEmployersStat: 'Verified Employers',
-    recentJobs: 'Recent Job Openings in Your',
-    cityHighlight: 'City',
-    recentJobsSuffix: '',
-    allJobs: 'All Jobs',
-    loadingText: 'Loading jobs...',
-    noJobsFound: 'No jobs found.',
-    noJobsSub: "To list the first job, click on '+ Post a Job' at the top right.",
-    verifiedBadge: '✅ Verified Company',
-    monthSalary: '/month',
-    applyCallBtn: '📞 Apply / Direct Call',
-    navHome: 'Home',
-    navJobs: 'Jobs',
-    navPostJob: 'Post Job',
-    quote: '"Connecting every hardworking individual with dignified local career opportunities is HireHere\'s vision."',
-    categories: [
-      { id: 'driver', label: 'Driver', icon: '🚗' },
-      { id: 'delivery', label: 'Delivery', icon: '📦' },
-      { id: 'security', label: 'Security', icon: '🛡️' },
-      { id: 'electrician', label: 'Electrician', icon: '⚡' },
-      { id: 'cleaning', label: 'Housekeeping', icon: '🧹' },
-      { id: 'factory', label: 'Factory Worker', icon: '🏭' },
-    ],
-  },
-};
+// Supabase Initialization
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co';
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder-key';
+const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 export default function JobPortal() {
-  const [lang, setLang] = useState<'hi' | 'en'>('hi');
+  const [currentLang, setCurrentLang] = useState<'hi' | 'en'>('hi');
   const [jobs, setJobs] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchCategory, setSearchCategory] = useState('');
   const [searchLocation, setSearchLocation] = useState('');
   const [activeTab, setActiveTab] = useState('all');
 
-  // Load saved language on start
+  // Load Google Translate Widget dynamically
   useEffect(() => {
-    const savedLang = localStorage.getItem('app_lang') as 'hi' | 'en';
-    if (savedLang === 'en' || savedLang === 'hi') {
-      setLang(savedLang);
-    }
+    const addGoogleTranslateScript = () => {
+      if (!document.getElementById('google-translate-script')) {
+        const script = document.createElement('script');
+        script.id = 'google-translate-script';
+        script.src = '//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit';
+        script.async = true;
+        document.body.appendChild(script);
+
+        (window as any).googleTranslateElementInit = () => {
+          new (window as any).google.translate.TranslateElement(
+            {
+              pageLanguage: 'en',
+              includedLanguages: 'hi,en',
+              layout: (window as any).google.translate.TranslateElement.InlineLayout.SIMPLE,
+              autoDisplay: false,
+            },
+            'google_translate_element'
+          );
+        };
+      }
+    };
+
+    addGoogleTranslateScript();
   }, []);
 
-  // Language change handler with localStorage sync
-  const toggleLanguage = () => {
-    const nextLang = lang === 'hi' ? 'en' : 'hi';
-    setLang(nextLang);
-    localStorage.setItem('app_lang', nextLang);
+  // Function to switch languages in real-time
+  const changeLanguage = (langCode: 'hi' | 'en') => {
+    setCurrentLang(langCode);
+    const selectElem = document.querySelector('.goog-te-combo') as HTMLSelectElement;
+    if (selectElem) {
+      selectElem.value = langCode;
+      selectElem.dispatchEvent(new Event('change'));
+    }
   };
-
-  const t = TRANSLATIONS[lang];
 
   const fetchJobs = async () => {
     setLoading(true);
-    let query = supabase.from('jobs').select('*').order('created_at', { ascending: false });
+    try {
+      let query = supabase.from('jobs').select('*').order('created_at', { ascending: false });
 
-    if (searchCategory && searchCategory !== 'all') {
-      query = query.ilike('category', `%${searchCategory}%`);
-    }
-    if (searchLocation) {
-      query = query.ilike('location_city', `%${searchLocation}%`);
-    }
+      if (searchCategory && searchCategory !== 'all') {
+        query = query.ilike('category', `%${searchCategory}%`);
+      }
+      if (searchLocation) {
+        query = query.ilike('location_city', `%${searchLocation}%`);
+      }
 
-    const { data, error } = await query;
-    if (error) {
-      console.error('Error fetching jobs:', error);
-    } else {
-      setJobs(data || []);
+      const { data, error } = await query;
+      if (error) {
+        console.error('Error fetching jobs:', error);
+      } else {
+        setJobs(data || []);
+      }
+    } catch (err) {
+      console.error('Fetch error:', err);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   useEffect(() => {
@@ -147,13 +88,34 @@ export default function JobPortal() {
     setSearchCategory(category === 'all' ? '' : category);
   };
 
+  const categories = [
+    { id: 'driver', label: 'Driver / ड्राइवर', icon: '🚗' },
+    { id: 'delivery', label: 'Delivery / डिलीवरी', icon: '📦' },
+    { id: 'security', label: 'Security / गार्ड', icon: '🛡️' },
+    { id: 'electrician', label: 'Electrician / इलेक्ट्रीशियन', icon: '⚡' },
+    { id: 'cleaning', label: 'Housekeeping / सफाई', icon: '🧹' },
+    { id: 'factory', label: 'Factory Worker / फैक्ट्री', icon: '🏭' },
+  ];
+
   return (
     <div className="w-full min-h-screen bg-[#f8fafc] font-sans pb-20 text-[#1a1a1a]">
+      {/* Hidden Google Translate Element Container */}
+      <div id="google_translate_element" className="hidden" />
+
+      {/* CSS to hide Google Translate Toolbar Banner overlay */}
+      <style jsx global>{`
+        .goog-te-banner-frame { display: none !important; }
+        body { top: 0px !important; }
+        .goog-tooltip { display: none !important; }
+        .goog-tooltip:hover { display: none !important; }
+        .goog-text-highlight { background-color: transparent !important; box-shadow: none !important; }
+      `}</style>
+
       {/* ===== HEADER ===== */}
       <header className="w-full bg-[#0d47a1] text-white px-6 py-4 sticky top-0 z-50 shadow-md">
         <div className="w-full flex justify-between items-center">
           <div>
-            <div className="text-2xl md:text-3xl font-black tracking-tight leading-none">
+            <div className="text-2xl md:text-3xl font-black tracking-tight leading-none notranslate">
               Hire<span className="text-[#ff6f00]">Here</span>
             </div>
             <div className="text-xs opacity-90 mt-1 tracking-wide">
@@ -161,21 +123,39 @@ export default function JobPortal() {
             </div>
           </div>
 
-          {/* TOP BUTTONS WITH WORKING LANGUAGE SWITCHER */}
+          {/* REAL-TIME LANGUAGE SWITCHER TOGGLE */}
           <div className="flex items-center gap-2 md:gap-3">
-            <button
-              onClick={toggleLanguage}
-              className="bg-white/20 border border-white/30 text-white px-3 py-1.5 rounded-full text-xs font-bold hover:bg-white/30 transition cursor-pointer flex items-center gap-1"
-            >
-              🌐 {lang === 'hi' ? 'English' : 'हिंदी'}
-            </button>
+            <div className="bg-white/10 p-1 rounded-full border border-white/20 flex items-center">
+              <button
+                type="button"
+                onClick={() => changeLanguage('hi')}
+                className={`px-3 py-1 text-xs font-black rounded-full transition cursor-pointer ${
+                  currentLang === 'hi'
+                    ? 'bg-[#ff6f00] text-white shadow-md'
+                    : 'text-white hover:bg-white/10'
+                }`}
+              >
+                🇮🇳 हिंदी
+              </button>
+              <button
+                type="button"
+                onClick={() => changeLanguage('en')}
+                className={`px-3 py-1 text-xs font-black rounded-full transition cursor-pointer ${
+                  currentLang === 'en'
+                    ? 'bg-[#ff6f00] text-white shadow-md'
+                    : 'text-white hover:bg-white/10'
+                }`}
+              >
+                🇬🇧 English
+              </button>
+            </div>
 
             {/* WORKER REGISTER BUTTON */}
             <Link
               href="/employee"
               className="bg-white text-[#0d47a1] hover:bg-gray-100 font-extrabold text-xs md:text-sm px-3.5 py-2 rounded-lg transition shadow-sm"
             >
-              {t.workerRegister}
+              👤 Worker Register
             </Link>
 
             {/* JOB POST BUTTON */}
@@ -183,7 +163,7 @@ export default function JobPortal() {
               href="/post-job"
               className="bg-[#ff6f00] hover:bg-[#e65100] text-white font-extrabold text-xs md:text-sm px-3.5 py-2 rounded-lg transition shadow-sm"
             >
-              {t.jobPost}
+              + Post Job
             </Link>
           </div>
         </div>
@@ -193,10 +173,10 @@ export default function JobPortal() {
       <section className="w-full bg-gradient-to-b from-[#0d47a1] to-[#1976d2] text-white px-6 py-10 md:py-14 text-center">
         <div className="w-full">
           <h1 className="text-3xl md:text-5xl font-black leading-tight mb-3">
-            {t.heroTitle} <span className="text-[#ff6f00]">{t.heroTitleHighlight}</span> {t.heroTitleSuffix}
+            Land Your Dream Job, <span className="text-[#ff6f00]">Connect With Top Employers</span>
           </h1>
           <p className="text-sm md:text-lg text-blue-100 opacity-95 mb-8">
-            {t.heroSubtitle}
+            No middlemen, zero fees — apply to verified companies in under 2 minutes and get hired fast.
           </p>
 
           {/* Dual Main Action Buttons */}
@@ -206,14 +186,14 @@ export default function JobPortal() {
               className="bg-[#ff6f00] hover:bg-[#e65100] text-white p-4 rounded-xl font-extrabold text-sm md:text-base flex flex-col sm:flex-row items-center justify-center gap-2 shadow-lg active:scale-95 transition"
             >
               <span className="text-2xl">📱</span>
-              <span>{t.wantJob}</span>
+              <span>I Need a Job</span>
             </Link>
             <Link
               href="/post-job"
               className="bg-white text-[#0d47a1] p-4 rounded-xl font-extrabold text-sm md:text-base flex flex-col sm:flex-row items-center justify-center gap-2 shadow-lg active:scale-95 transition"
             >
               <span className="text-2xl">🏢</span>
-              <span>{t.wantWorker}</span>
+              <span>I Need Workers</span>
             </Link>
           </div>
 
@@ -221,24 +201,25 @@ export default function JobPortal() {
           <div className="bg-white rounded-xl p-2 shadow-xl flex items-center max-w-2xl mx-auto">
             <input
               type="text"
-              placeholder={t.searchPlaceholder}
+              placeholder="Type your city (e.g. Pune, Mumbai, Delhi)..."
               className="flex-1 p-3 text-sm md:text-base outline-none text-gray-800 bg-transparent w-full"
               value={searchLocation}
               onChange={(e) => setSearchLocation(e.target.value)}
             />
             <button
+              type="button"
               onClick={fetchJobs}
-              className="bg-[#ff6f00] text-white px-6 py-3 rounded-lg text-sm md:text-base font-bold hover:bg-[#e65100] transition whitespace-nowrap"
+              className="bg-[#ff6f00] text-white px-6 py-3 rounded-lg text-sm md:text-base font-bold hover:bg-[#e65100] transition whitespace-nowrap cursor-pointer"
             >
-              {t.searchBtn}
+              🔍 Search
             </button>
           </div>
 
           {/* Trust Badges */}
           <div className="flex justify-center flex-wrap gap-6 mt-6 text-xs md:text-sm font-semibold text-blue-100">
-            <span>{t.trust1}</span>
-            <span>{t.trust2}</span>
-            <span>{t.trust3}</span>
+            <span>✅ 100% Verified Jobs</span>
+            <span>🔒 Zero Consultancy Fee</span>
+            <span>⚡ Direct HR Call & Chat</span>
           </div>
         </div>
       </section>
@@ -246,12 +227,13 @@ export default function JobPortal() {
       {/* ===== CATEGORIES SECTION ===== */}
       <section className="w-full px-6 py-8">
         <h2 className="text-xl md:text-2xl font-black text-[#0d47a1] mb-4">
-          {t.catQuestion} <span className="text-[#ff6f00]">{t.catQuestionHighlight}</span> {t.catQuestionSuffix}
+          Which <span className="text-[#ff6f00]">Job Category</span> do you want?
         </h2>
         <div className="grid grid-cols-3 sm:grid-cols-6 gap-3 md:gap-4 w-full">
-          {t.categories.map((cat) => (
+          {categories.map((cat) => (
             <button
               key={cat.id}
+              type="button"
               onClick={() => handleCategoryFilter(cat.id)}
               className="bg-white border-2 border-gray-200 rounded-2xl p-4 text-center flex flex-col items-center justify-center active:scale-95 transition hover:border-[#ff6f00] shadow-sm hover:shadow-md cursor-pointer"
             >
@@ -267,15 +249,15 @@ export default function JobPortal() {
         <div className="w-full bg-[#0d47a1] text-white py-6 px-6 rounded-2xl shadow-lg grid grid-cols-3 text-center divide-x divide-white/20">
           <div>
             <div className="text-2xl md:text-4xl font-black text-[#ff6f00]">5L+</div>
-            <div className="text-xs md:text-sm opacity-90 mt-1">{t.workersStat}</div>
+            <div className="text-xs md:text-sm opacity-90 mt-1">Registered Workers</div>
           </div>
           <div>
             <div className="text-2xl md:text-4xl font-black text-[#ff6f00]">50K+</div>
-            <div className="text-xs md:text-sm opacity-90 mt-1">{t.jobsProvidedStat}</div>
+            <div className="text-xs md:text-sm opacity-90 mt-1">Jobs Placed</div>
           </div>
           <div>
             <div className="text-2xl md:text-4xl font-black text-[#ff6f00]">20K+</div>
-            <div className="text-xs md:text-sm opacity-90 mt-1">{t.verifiedEmployersStat}</div>
+            <div className="text-xs md:text-sm opacity-90 mt-1">Verified Employers</div>
           </div>
         </div>
       </div>
@@ -283,7 +265,7 @@ export default function JobPortal() {
       {/* ===== JOB LISTINGS SECTION ===== */}
       <section className="w-full px-6 py-4" id="jobs-section">
         <h2 className="text-xl md:text-2xl font-black text-[#0d47a1] mb-4">
-          {t.recentJobs} <span className="text-[#ff6f00]">{t.cityHighlight}</span> {t.recentJobsSuffix}
+          Recent Job Openings in Your <span className="text-[#ff6f00]">City</span>
         </h2>
 
         {/* Filter Tabs */}
@@ -291,6 +273,7 @@ export default function JobPortal() {
           {['all', 'driver', 'delivery', 'security', 'factory', 'electrician'].map((tab) => (
             <button
               key={tab}
+              type="button"
               onClick={() => handleCategoryFilter(tab)}
               className={`px-5 py-2 rounded-full text-xs md:text-sm font-bold capitalize flex-shrink-0 transition cursor-pointer ${
                 activeTab === tab
@@ -298,18 +281,18 @@ export default function JobPortal() {
                   : 'bg-white text-gray-700 border border-gray-300 hover:border-[#0d47a1]'
               }`}
             >
-              {tab === 'all' ? t.allJobs : tab}
+              {tab === 'all' ? 'All Jobs' : tab}
             </button>
           ))}
         </div>
 
         {/* Jobs Grid */}
         {loading ? (
-          <p className="text-center text-gray-500 py-16 text-base font-bold">{t.loadingText}</p>
+          <p className="text-center text-gray-500 py-16 text-base font-bold">Loading jobs...</p>
         ) : jobs.length === 0 ? (
           <div className="w-full bg-white rounded-2xl p-10 text-center border shadow-sm my-4">
-            <p className="text-gray-700 font-bold mb-2 text-lg">{t.noJobsFound}</p>
-            <p className="text-xs md:text-sm text-gray-400">{t.noJobsSub}</p>
+            <p className="text-gray-700 font-bold mb-2 text-lg">No jobs found.</p>
+            <p className="text-xs md:text-sm text-gray-400">To list the first job, click on '+ Post a Job' at top right.</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -323,7 +306,7 @@ export default function JobPortal() {
                     <h3 className="font-extrabold text-[#0d47a1] text-lg leading-snug">{job.title}</h3>
                     {job.is_verified && (
                       <span className="bg-[#e8f5e9] text-[#2e7d32] text-xs font-extrabold px-2.5 py-1 rounded-md whitespace-nowrap">
-                        {t.verifiedBadge}
+                        ✅ Verified Company
                       </span>
                     )}
                   </div>
@@ -334,7 +317,7 @@ export default function JobPortal() {
 
                   <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-gray-600 mb-4">
                     <span className="font-extrabold text-[#2e7d32]">
-                      💰 ₹{job.min_salary?.toLocaleString()} - ₹{job.max_salary?.toLocaleString()}{t.monthSalary}
+                      💰 ₹{job.min_salary?.toLocaleString()} - ₹{job.max_salary?.toLocaleString()} /month
                     </span>
                     <span>📍 {job.location_city}</span>
                   </div>
@@ -346,7 +329,7 @@ export default function JobPortal() {
                     href={`tel:${job.hr_call_number}`}
                     className="flex-1 bg-[#0d47a1] hover:bg-[#1976d2] text-white text-center py-2.5 rounded-xl text-xs md:text-sm font-black transition shadow-sm"
                   >
-                    {t.applyCallBtn}
+                    📞 Apply / Direct Call
                   </a>
                   <a
                     href={`https://wa.me/${job.hr_whatsapp_number}?text=Hi,%20I%20am%20interested%20in%20the%20${encodeURIComponent(job.title)}%20job%20posted%20on%20HireHere.in`}
@@ -366,18 +349,18 @@ export default function JobPortal() {
       {/* ===== FOUNDER CARD ===== */}
       <section className="w-full px-6 py-8">
         <div className="w-full bg-gradient-to-r from-[#0d47a1] to-[#1976d2] text-white rounded-2xl p-6 md:p-8 shadow-lg flex flex-col sm:flex-row items-center gap-6">
-          <div className="w-16 h-16 rounded-full bg-[#ff6f00] border-2 border-white flex items-center justify-center text-2xl font-black text-white shadow-md flex-shrink-0">
+          <div className="w-16 h-16 rounded-full bg-[#ff6f00] border-2 border-white flex items-center justify-center text-2xl font-black text-white shadow-md flex-shrink-0 notranslate">
             SS
           </div>
           <div>
             <div className="flex items-center gap-3 mb-1">
-              <h4 className="font-extrabold text-xl">Sujit Shinde</h4>
+              <h4 className="font-extrabold text-xl notranslate">Sujit Shinde</h4>
               <span className="text-xs bg-white/20 px-3 py-0.5 rounded-full font-bold">
                 Founder & CEO
               </span>
             </div>
             <p className="text-sm md:text-base italic border-l-4 border-[#ff6f00] pl-3 py-1 opacity-95">
-              {t.quote}
+              "Connecting every hardworking individual with dignified local career opportunities is HireHere's vision."
             </p>
           </div>
         </div>
@@ -385,11 +368,11 @@ export default function JobPortal() {
 
       {/* ===== FOOTER ===== */}
       <footer className="w-full bg-[#0d47a1] text-white text-center py-10 px-6 mt-8">
-        <div className="text-2xl font-black mb-1">
+        <div className="text-2xl font-black mb-1 notranslate">
           Hire<span className="text-[#ff6f00]">Here</span>
         </div>
         <div className="text-sm opacity-90 mb-4">
-          Founded by <strong>Sujit Shinde</strong>
+          Founded by <strong className="notranslate">Sujit Shinde</strong>
         </div>
         <div className="text-xs opacity-75">
           © 2026 HireHere Technologies Pvt Ltd. Made in India 🇮🇳<br />
@@ -400,28 +383,30 @@ export default function JobPortal() {
       {/* ===== FIXED BOTTOM NAVIGATION (MOBILE ONLY) ===== */}
       <nav className="md:hidden fixed bottom-0 left-0 right-0 w-full bg-white border-t border-gray-200 py-2.5 px-4 flex justify-around items-center z-50 shadow-2xl">
         <button
+          type="button"
           onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-          className="flex flex-col items-center text-[#0d47a1] font-extrabold text-[11px]"
+          className="flex flex-col items-center text-[#0d47a1] font-extrabold text-[11px] cursor-pointer"
         >
           <span className="text-xl">🏠</span>
-          <span>{t.navHome}</span>
+          <span>Home</span>
         </button>
         <button
+          type="button"
           onClick={() => {
             const el = document.getElementById('jobs-section');
             el?.scrollIntoView({ behavior: 'smooth' });
           }}
-          className="flex flex-col items-center text-gray-500 font-bold text-[11px]"
+          className="flex flex-col items-center text-gray-500 font-bold text-[11px] cursor-pointer"
         >
           <span className="text-xl">🔍</span>
-          <span>{t.navJobs}</span>
+          <span>Jobs</span>
         </button>
         <Link
           href="/post-job"
           className="flex flex-col items-center text-gray-500 font-bold text-[11px]"
         >
           <span className="text-xl">📋</span>
-          <span>{t.navPostJob}</span>
+          <span>Post Job</span>
         </Link>
       </nav>
     </div>

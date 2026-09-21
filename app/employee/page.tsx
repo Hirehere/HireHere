@@ -1,15 +1,53 @@
 "use client";
-import { useState, useEffect } from "react";
+
+import React, { useState, useEffect } from "react";
 import { createClient } from "@supabase/supabase-js";
 import Link from "next/link";
 
-// Safe Supabase Client Instantiation
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "";
+// Safe Supabase Client Initialization (Prevents Prerender Build Errors)
+const supabaseUrl =
+  process.env.NEXT_PUBLIC_SUPABASE_URL || "https://placeholder.supabase.co";
+const supabaseAnonKey =
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "placeholder-key";
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
+// Type definition for categories dictionary
+type CategoryDict = {
+  [key: string]: string[];
+};
+
+type TranslationType = {
+  title: string;
+  titleHighlight: string;
+  subtitle: string;
+  freeReg: string;
+  goHome: string;
+  fullName: string;
+  namePlaceholder: string;
+  mobileNumber: string;
+  mobilePlaceholder: string;
+  city: string;
+  jobCategory: string;
+  designation: string;
+  qualification: string;
+  experience: string;
+  noticePeriod: string;
+  expectedSalary: string;
+  salaryPlaceholder: string;
+  attachResume: string;
+  submitBtn: string;
+  submittingBtn: string;
+  alreadyRegisteredErr: string;
+  successMsg: string;
+  qualifications: { value: string; label: string }[];
+  experiences: { value: string; label: string }[];
+  noticePeriods: { value: string; label: string }[];
+  cities: string[];
+  categories: CategoryDict;
+};
+
 // Translation Dictionary
-const TRANSLATIONS = {
+const TRANSLATIONS: Record<"hi" | "en", TranslationType> = {
   hi: {
     title: "काम पाने के लिए",
     titleHighlight: "प्रोफाइल बनाएं",
@@ -209,19 +247,20 @@ export default function EmployeeRegister() {
   }, []);
 
   const t = TRANSLATIONS[lang];
-  const defaultCategory = Object.keys(t.categories)[0];
+  const categoryKeys = Object.keys(t.categories);
+  const defaultCategory = categoryKeys[0] || "";
 
-  const [selectedCategory, setSelectedCategory] = useState(defaultCategory);
+  const [selectedCategory, setSelectedCategory] = useState<string>(defaultCategory);
   
   const [formData, setFormData] = useState({
     name: "",
     phone: "",
     city: t.cities[0],
     job_category: defaultCategory,
-    designation: t.categories[defaultCategory as keyof typeof t.categories][0],
-    qualification: t.qualifications[1].value,
-    experience: t.experiences[1].value,
-    notice_period: t.noticePeriods[0].value,
+    designation: t.categories[defaultCategory]?.[0] || "",
+    qualification: t.qualifications[1]?.value || "10th Pass",
+    experience: t.experiences[1]?.value || "0 - 1 Year",
+    notice_period: t.noticePeriods[0]?.value || "Immediate",
     expected_salary: "",
   });
 
@@ -230,13 +269,14 @@ export default function EmployeeRegister() {
     setLang(selectedLang);
     localStorage.setItem("app_lang", selectedLang);
     const newTranslations = TRANSLATIONS[selectedLang];
-    const newCat = Object.keys(newTranslations.categories)[0];
+    const newCatKeys = Object.keys(newTranslations.categories);
+    const newCat = newCatKeys[0] || "";
     setSelectedCategory(newCat);
     setFormData((prev) => ({
       ...prev,
       city: newTranslations.cities[0],
       job_category: newCat,
-      designation: newTranslations.categories[newCat as keyof typeof newTranslations.categories][0],
+      designation: newTranslations.categories[newCat]?.[0] || "",
     }));
   };
 
@@ -244,7 +284,7 @@ export default function EmployeeRegister() {
 
   const handleCategoryChange = (category: string) => {
     setSelectedCategory(category);
-    const availableDesignations = t.categories[category as keyof typeof t.categories] || [];
+    const availableDesignations = t.categories[category] || [];
     setFormData({
       ...formData,
       job_category: category,
@@ -311,22 +351,24 @@ export default function EmployeeRegister() {
       alert(t.successMsg);
       
       // Reset form
-      const resetCat = Object.keys(t.categories)[0];
+      const resetCatKeys = Object.keys(t.categories);
+      const resetCat = resetCatKeys[0] || "";
       setSelectedCategory(resetCat);
       setFormData({
         name: "",
         phone: "",
         city: t.cities[0],
         job_category: resetCat,
-        designation: t.categories[resetCat as keyof typeof t.categories][0],
-        qualification: t.qualifications[1].value,
-        experience: t.experiences[1].value,
-        notice_period: t.noticePeriods[0].value,
+        designation: t.categories[resetCat]?.[0] || "",
+        qualification: t.qualifications[1]?.value || "10th Pass",
+        experience: t.experiences[1]?.value || "0 - 1 Year",
+        notice_period: t.noticePeriods[0]?.value || "Immediate",
         expected_salary: "",
       });
       setResumeFile(null);
-    } catch (err: any) {
-      const errStr = JSON.stringify(err) + (err?.message || "");
+    } catch (err: unknown) {
+      const errorObj = err as { message?: string };
+      const errStr = JSON.stringify(err) + (errorObj?.message || "");
       if (
         errStr.includes("23505") ||
         errStr.includes("candidates_mobile_number_key") ||
@@ -335,14 +377,14 @@ export default function EmployeeRegister() {
       ) {
         alert(t.alreadyRegisteredErr);
       } else {
-        alert("Error: " + (err?.message || "An error occurred."));
+        alert("Error: " + (errorObj?.message || "An error occurred."));
       }
     } finally {
       setLoading(false);
     }
   };
 
-  const currentDesignations = t.categories[selectedCategory as keyof typeof t.categories] || Object.values(t.categories)[0] || [];
+  const currentDesignations: string[] = t.categories[selectedCategory] || [];
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-900 via-blue-800 to-slate-900 text-gray-800">
@@ -356,7 +398,7 @@ export default function EmployeeRegister() {
           <button
             type="button"
             onClick={() => toggleLanguage(lang === "hi" ? "en" : "hi")}
-            className="text-xs font-bold bg-orange-500 hover:bg-orange-600 text-white px-3 py-1.5 rounded-lg transition"
+            className="text-xs font-bold bg-orange-500 hover:bg-orange-600 text-white px-3 py-1.5 rounded-lg transition cursor-pointer"
           >
             🌐 {lang === "hi" ? "English" : "हिंदी"}
           </button>
@@ -426,7 +468,7 @@ export default function EmployeeRegister() {
                 value={formData.city}
                 onChange={(e) => setFormData({ ...formData, city: e.target.value })}
               >
-                {t.cities.map((city) => (
+                {t.cities.map((city: string) => (
                   <option key={city} value={city}>{city}</option>
                 ))}
               </select>
@@ -442,7 +484,7 @@ export default function EmployeeRegister() {
                 value={selectedCategory}
                 onChange={(e) => handleCategoryChange(e.target.value)}
               >
-                {Object.keys(t.categories).map((cat) => (
+                {Object.keys(t.categories).map((cat: string) => (
                   <option key={cat} value={cat}>{cat}</option>
                 ))}
               </select>
@@ -458,7 +500,7 @@ export default function EmployeeRegister() {
                 value={formData.designation}
                 onChange={(e) => setFormData({ ...formData, designation: e.target.value })}
               >
-                {currentDesignations.map((desig) => (
+                {currentDesignations.map((desig: string) => (
                   <option key={desig} value={desig}>{desig}</option>
                 ))}
               </select>
