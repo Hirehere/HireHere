@@ -3,10 +3,10 @@ import { useState, useEffect } from "react";
 import { createClient } from "@supabase/supabase-js";
 import Link from "next/link";
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
+// Safe Supabase Client Instantiation
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "";
+const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 // Translation Dictionary
 const TRANSLATIONS = {
@@ -200,7 +200,7 @@ export default function EmployeeRegister() {
   const [lang, setLang] = useState<"hi" | "en">("hi");
   const [loading, setLoading] = useState(false);
 
-  // Read saved language preference from front page
+  // Read saved language preference from localStorage
   useEffect(() => {
     const savedLang = localStorage.getItem("app_lang") as "hi" | "en";
     if (savedLang === "en" || savedLang === "hi") {
@@ -218,7 +218,7 @@ export default function EmployeeRegister() {
     phone: "",
     city: t.cities[0],
     job_category: defaultCategory,
-    designation: t.categories[defaultCategory][0],
+    designation: t.categories[defaultCategory as keyof typeof t.categories][0],
     qualification: t.qualifications[1].value,
     experience: t.experiences[1].value,
     notice_period: t.noticePeriods[0].value,
@@ -236,7 +236,7 @@ export default function EmployeeRegister() {
       ...prev,
       city: newTranslations.cities[0],
       job_category: newCat,
-      designation: newTranslations.categories[newCat][0],
+      designation: newTranslations.categories[newCat as keyof typeof newTranslations.categories][0],
     }));
   };
 
@@ -244,7 +244,7 @@ export default function EmployeeRegister() {
 
   const handleCategoryChange = (category: string) => {
     setSelectedCategory(category);
-    const availableDesignations = t.categories[category] || [];
+    const availableDesignations = t.categories[category as keyof typeof t.categories] || [];
     setFormData({
       ...formData,
       job_category: category,
@@ -318,7 +318,7 @@ export default function EmployeeRegister() {
         phone: "",
         city: t.cities[0],
         job_category: resetCat,
-        designation: t.categories[resetCat][0],
+        designation: t.categories[resetCat as keyof typeof t.categories][0],
         qualification: t.qualifications[1].value,
         experience: t.experiences[1].value,
         notice_period: t.noticePeriods[0].value,
@@ -326,7 +326,7 @@ export default function EmployeeRegister() {
       });
       setResumeFile(null);
     } catch (err: any) {
-      const errStr = JSON.stringify(err) + (err.message || "");
+      const errStr = JSON.stringify(err) + (err?.message || "");
       if (
         errStr.includes("23505") ||
         errStr.includes("candidates_mobile_number_key") ||
@@ -335,12 +335,14 @@ export default function EmployeeRegister() {
       ) {
         alert(t.alreadyRegisteredErr);
       } else {
-        alert("Error: " + (err.message || "An error occurred."));
+        alert("Error: " + (err?.message || "An error occurred."));
       }
     } finally {
       setLoading(false);
     }
   };
+
+  const currentDesignations = t.categories[selectedCategory as keyof typeof t.categories] || Object.values(t.categories)[0] || [];
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-900 via-blue-800 to-slate-900 text-gray-800">
@@ -352,6 +354,7 @@ export default function EmployeeRegister() {
         <div className="flex items-center gap-3">
           {/* Language Selector Switcher */}
           <button
+            type="button"
             onClick={() => toggleLanguage(lang === "hi" ? "en" : "hi")}
             className="text-xs font-bold bg-orange-500 hover:bg-orange-600 text-white px-3 py-1.5 rounded-lg transition"
           >
@@ -455,7 +458,7 @@ export default function EmployeeRegister() {
                 value={formData.designation}
                 onChange={(e) => setFormData({ ...formData, designation: e.target.value })}
               >
-                {t.categories[selectedCategory]?.map((desig) => (
+                {currentDesignations.map((desig) => (
                   <option key={desig} value={desig}>{desig}</option>
                 ))}
               </select>
@@ -541,7 +544,7 @@ export default function EmployeeRegister() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white font-bold py-3.5 px-4 rounded-xl shadow-lg shadow-orange-500/30 transition transform active:scale-98 disabled:opacity-50"
+              className="w-full bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white font-bold py-3.5 px-4 rounded-xl shadow-lg shadow-orange-500/30 transition transform active:scale-98 disabled:opacity-50 cursor-pointer"
             >
               {loading ? t.submittingBtn : t.submitBtn}
             </button>

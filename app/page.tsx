@@ -1,30 +1,24 @@
 'use client';
 import React, { useState, useEffect } from 'react';
-import { createClient } from '@supabase/supabase-js';
+import { supabase } from '@/lib/supabase';
 import Link from 'next/link';
-
-// Supabase Direct Client Init
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
 
 // Professional Translation Dictionary
 const TRANSLATIONS = {
   hi: {
     workerRegister: '👤 Worker Register',
     jobPost: '+ Job Post Karein',
-    heroTitle: '2 मिनट में',
-    heroTitleHighlight: 'प्रोफाइल बनाएं',
-    heroTitleSuffix: 'और पाएं डायरेक्ट जॉब',
-    heroSubtitle: 'ना रिज़्यूमे की बाध्यता, ना फीस — सीधे वेरिफाइड कंपनियों से जुड़ें और काम पाएं।',
+    heroTitle: 'अपनी पसंद की नौकरी पाएं,',
+    heroTitleHighlight: 'सीधे रिक्रूटर्स से जुड़ें',
+    heroTitleSuffix: '',
+    heroSubtitle: 'बिना किसी मिडलमैन या फीस के — वेरिफाइड कंपनियों में अपना ड्रीम जॉब पाएं सिर्फ 2 मिनट में।',
     wantJob: 'मुझे काम चाहिए',
     wantWorker: 'मुझे वर्कर चाहिए',
     searchPlaceholder: 'अपना शहर लिखें (उदा. Pune, Mumbai, Delhi)...',
     searchBtn: '🔍 Search',
-    trust1: '✅ 100% फ्री',
-    trust2: '🔒 वेरिफाइड कंपनियां',
-    trust3: '🗣️ Direct WhatsApp Call',
+    trust1: '✅ 100% वेरिफाइड जॉब्स',
+    trust2: '🔒 ज़ीरो कंसल्टेंसी फीस',
+    trust3: '⚡ डायरेक्ट HR कॉल और चैट',
     catQuestion: 'किस प्रकार की',
     catQuestionHighlight: 'जॉब',
     catQuestionSuffix: 'चाहिए?',
@@ -38,7 +32,7 @@ const TRANSLATIONS = {
     loadingText: 'नौकरियां लोड हो रही हैं...',
     noJobsFound: 'कोई जॉब नहीं मिली।',
     noJobsSub: "पहली जॉब लिस्ट करने के लिए ऊपर '+ Job Post Karein' पर क्लिक करें।",
-    verifiedBadge: '✅ वेरिफाइड कंपनी',
+    verifiedBadge: '✅ Verified Company',
     monthSalary: '/महीना',
     applyCallBtn: '📞 Apply / Direct Call',
     navHome: 'होम',
@@ -57,17 +51,17 @@ const TRANSLATIONS = {
   en: {
     workerRegister: '👤 Worker Register',
     jobPost: '+ Post a Job',
-    heroTitle: 'Build Profile in',
-    heroTitleHighlight: '2 Minutes',
-    heroTitleSuffix: '& Get Hired Directly',
-    heroSubtitle: 'Zero fee, no mandatory resume — connect directly with top verified employers.',
+    heroTitle: 'Land Your Dream Job,',
+    heroTitleHighlight: 'Connect With Top Employers',
+    heroTitleSuffix: '',
+    heroSubtitle: 'No middlemen, zero fees — apply to verified companies in under 2 minutes and get hired fast.',
     wantJob: 'I Need a Job',
     wantWorker: 'I Need Workers',
     searchPlaceholder: 'Type your city (e.g. Pune, Mumbai, Delhi)...',
     searchBtn: '🔍 Search',
-    trust1: '✅ 100% Free',
-    trust2: '🔒 Verified Employers',
-    trust3: '🗣️ Direct WhatsApp',
+    trust1: '✅ 100% Verified Jobs',
+    trust2: '🔒 Zero Consultancy Fee',
+    trust3: '⚡ Direct HR Call & Chat',
     catQuestion: 'Which',
     catQuestionHighlight: 'Job Category',
     catQuestionSuffix: 'do you want?',
@@ -81,7 +75,7 @@ const TRANSLATIONS = {
     loadingText: 'Loading jobs...',
     noJobsFound: 'No jobs found.',
     noJobsSub: "To list the first job, click on '+ Post a Job' at the top right.",
-    verifiedBadge: '✅ Verified Employer',
+    verifiedBadge: '✅ Verified Company',
     monthSalary: '/month',
     applyCallBtn: '📞 Apply / Direct Call',
     navHome: 'Home',
