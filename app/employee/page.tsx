@@ -13,27 +13,64 @@ export default function EmployeeRegister() {
     city: '',
     preferred_job_category: 'driver',
     experience_years: '0-1 year',
+    qualification: '10th Pass',
+    designation: '',
+    notice_period: 'Immediate',
+    expected_salary: '',
   });
+  const [resumeFile, setResumeFile] = useState<File | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
-    const { data, error } = await supabase
-      .from('candidates')
-      .insert([formData])
-      .select();
+    try {
+      let resumeUrl = '';
 
-    if (error) {
-      alert('Error: ' + error.message);
-    } else {
-      alert('Aapka Worker Profile safaltapurvak ban gaya hai!');
-      if (data && data[0]) {
-        localStorage.setItem('hirehere_candidate_id', data[0].id);
+      // 1. Upload Resume to Supabase Storage if file is selected
+      if (resumeFile) {
+        const fileExt = resumeFile.name.split('.').pop();
+        const fileName = `${Date.now()}_${formData.mobile_number}.${fileExt}`;
+        
+        const { error: uploadError } = await supabase.storage
+          .from('resumes')
+          .upload(fileName, resumeFile);
+
+        if (uploadError) {
+          console.error('Resume upload error:', uploadError);
+        } else {
+          const { data: publicUrlData } = supabase.storage
+            .from('resumes')
+            .getPublicUrl(fileName);
+          resumeUrl = publicUrlData.publicUrl;
+        }
       }
-      router.push('/#jobs-section');
+
+      // 2. Insert Candidate Record in Database
+      const { data, error } = await supabase
+        .from('candidates')
+        .insert([
+          {
+            ...formData,
+            resume_url: resumeUrl,
+          },
+        ])
+        .select();
+
+      if (error) {
+        alert('Error: ' + error.message);
+      } else {
+        alert('Aapka Worker Profile safaltapurvak ban gaya hai!');
+        if (data && data[0]) {
+          localStorage.setItem('hirehere_candidate_id', data[0].id);
+        }
+        router.push('/#jobs-section');
+      }
+    } catch (err: any) {
+      alert('Error: ' + err.message);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   return (
@@ -57,7 +94,7 @@ export default function EmployeeRegister() {
               काम पाने के लिए <span className="text-[#ff6f00]">प्रोफाइल बनाएं</span>
             </h1>
             <p className="text-xs text-gray-500 mt-1">
-              ना रिज़्यूमे, ना फीस — 1 मिनट में डायरेक्ट काम पाओ!
+              डायरेक्ट काम पाओ — 1 मिनट में प्रोफाइल बनाएं!
             </p>
           </div>
 
@@ -107,7 +144,21 @@ export default function EmployeeRegister() {
 
             <div>
               <label className="block text-xs font-bold text-gray-700 mb-1">
-                किस तरह का काम चाहिए? *
+                पद / Designation *
+              </label>
+              <input
+                type="text"
+                required
+                placeholder="उदा. Sr. Driver, Accountant, Sales Executive"
+                className="w-full p-3 border border-gray-300 rounded-xl text-sm outline-none focus:border-[#0d47a1]"
+                value={formData.designation}
+                onChange={(e) => setFormData({ ...formData, designation: e.target.value })}
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-gray-700 mb-1">
+                किस तरह का काम चाहिए? (Category) *
               </label>
               <select
                 className="w-full p-3 border border-gray-300 rounded-xl text-sm outline-none bg-white focus:border-[#0d47a1]"
@@ -121,6 +172,25 @@ export default function EmployeeRegister() {
                 <option value="cleaning">🧹 सफाई / हाउसकीपिंग</option>
                 <option value="factory">🏭 फैक्ट्री / हेल्पर</option>
                 <option value="cook">👨‍🍳 कुक / शेफ</option>
+                <option value="office">💻 ऑफिस / अकाउंट्स / सेल्स</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-gray-700 mb-1">
+                शैक्षणिक योग्यता (Qualification) *
+              </label>
+              <select
+                className="w-full p-3 border border-gray-300 rounded-xl text-sm outline-none bg-white focus:border-[#0d47a1]"
+                value={formData.qualification}
+                onChange={(e) => setFormData({ ...formData, qualification: e.target.value })}
+              >
+                <option value="below_10th">10th से कम</option>
+                <option value="10th Pass">10th Pass</option>
+                <option value="12th Pass">12th Pass</option>
+                <option value="ITI / Diploma">ITI / Diploma</option>
+                <option value="Graduate">Graduate</option>
+                <option value="Post Graduate">Post Graduate</option>
               </select>
             </div>
 
@@ -138,6 +208,47 @@ export default function EmployeeRegister() {
                 <option value="1-3 years">1 - 3 साल</option>
                 <option value="3+ years">3 साल से ज्यादा</option>
               </select>
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-gray-700 mb-1">
+                नोटिस पीरियड (Notice Period) *
+              </label>
+              <select
+                className="w-full p-3 border border-gray-300 rounded-xl text-sm outline-none bg-white focus:border-[#0d47a1]"
+                value={formData.notice_period}
+                onChange={(e) => setFormData({ ...formData, notice_period: e.target.value })}
+              >
+                <option value="Immediate">तुरंत ज्वाइन कर सकते हैं (Immediate)</option>
+                <option value="15 Days">15 दिन</option>
+                <option value="1 Month">1 महीना</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-gray-700 mb-1">
+                अपेक्षित वेतन (Expected Salary per Month) *
+              </label>
+              <input
+                type="text"
+                required
+                placeholder="उदा. ₹15,000 - ₹20,000"
+                className="w-full p-3 border border-gray-300 rounded-xl text-sm outline-none focus:border-[#0d47a1]"
+                value={formData.expected_salary}
+                onChange={(e) => setFormData({ ...formData, expected_salary: e.target.value })}
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-gray-700 mb-1">
+                रिज्यूमे अटैच करें (Attach Resume - Optional)
+              </label>
+              <input
+                type="file"
+                accept=".pdf,.doc,.docx"
+                className="w-full p-2.5 border border-gray-300 rounded-xl text-xs outline-none bg-gray-50 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-[#0d47a1] file:text-white hover:file:bg-[#0a3880]"
+                onChange={(e) => e.target.files && setResumeFile(e.target.files[0])}
+              />
             </div>
 
             <button
