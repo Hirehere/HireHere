@@ -10,15 +10,16 @@ const supabase = createClient(
 
 const CITIES = [
   "Pune",
-  "Sanand",
+  "Mumbai",
   "Delhi / NCR",
   "Bengaluru",
-  "Chennai",
-  "Aurangabad",
   "Hyderabad",
+  "Ahmedabad",
+  "Chennai",
   "Kolkata",
   "Nagpur",
   "Nashik",
+  "Aurangabad",
   "Other / अन्य",
 ];
 
@@ -151,7 +152,15 @@ export default function EmployeeRegister() {
       });
       setResumeFile(null);
     } catch (err: any) {
-      alert("Error: " + err.message);
+      // Unique Constraint / Duplicate Phone Error Handling
+      if (
+        err.code === "23505" || 
+        (err.message && err.message.includes("unique constraint"))
+      ) {
+        alert("यह मोबाइल नंबर पहले से ही रजिस्टर्ड है। कृपया दूसरा मोबाइल नंबर दर्ज करें! (This mobile number is already registered. Please register with another number.)");
+      } else {
+        alert("Error: " + err.message);
+      }
     } finally {
       setLoading(false);
     }
