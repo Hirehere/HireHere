@@ -10,16 +10,15 @@ const supabase = createClient(
 
 const CITIES = [
   "Pune",
-  "Mumbai",
-  "Delhi / NCR",
+  "Sanand",
+  "Gurgaon / NCR",
   "Bengaluru",
-  "Hyderabad",
-  "Ahmedabad",
   "Chennai",
+  "Aurangabad",
+  "Hydrabad",
   "Kolkata",
   "Nagpur",
-  "Nashik",
-  "Aurangabad",
+  "Mehsana",
   "Other / अन्य",
 ];
 
@@ -101,11 +100,26 @@ export default function EmployeeRegister() {
     setLoading(true);
 
     try {
-      let resumeUrl = "";
+      const formattedPhone = formData.phone.trim();
 
+      // 1. Explicit Check: Mobile number already exists in Database?
+      const { data: existingCandidate } = await supabase
+        .from("candidates")
+        .select("id")
+        .eq("phone", formattedPhone)
+        .maybeSingle();
+
+      if (existingCandidate) {
+        alert("यह मोबाइल नंबर पहले से ही रजिस्टर्ड है। कृपया दूसरा मोबाइल नंबर दर्ज करें! (This mobile number is already registered. Please use another number.)");
+        setLoading(false);
+        return;
+      }
+
+      // 2. Upload Resume if selected
+      let resumeUrl = "";
       if (resumeFile) {
         const fileExt = resumeFile.name.split(".").pop();
-        const fileName = `${Date.now()}_${formData.phone}.${fileExt}`;
+        const fileName = `${Date.now()}_${formattedPhone}.${fileExt}`;
         const { error: uploadError } = await supabase.storage
           .from("resumes")
           .upload(fileName, resumeFile);
@@ -119,10 +133,11 @@ export default function EmployeeRegister() {
         resumeUrl = publicUrlData.publicUrl;
       }
 
+      // 3. Insert Candidate Data
       const { error } = await supabase.from("candidates").insert([
         {
           full_name: formData.name,
-          phone: formData.phone,
+          phone: formattedPhone,
           city: formData.city,
           job_category: formData.job_category,
           designation: formData.designation,
@@ -137,6 +152,8 @@ export default function EmployeeRegister() {
       if (error) throw error;
 
       alert("प्रोफाइल सफलतापूर्वक बन गई है!");
+      
+      // Reset Form
       const defaultCategory = "Driver / ड्राइवर";
       setSelectedCategory(defaultCategory);
       setFormData({
@@ -152,14 +169,18 @@ export default function EmployeeRegister() {
       });
       setResumeFile(null);
     } catch (err: any) {
-      // Unique Constraint / Duplicate Phone Error Handling
+      const errStr = JSON.stringify(err) + (err.message || "");
+      
+      // Fallback check for duplicate constraint
       if (
-        err.code === "23505" || 
-        (err.message && err.message.includes("unique constraint"))
+        errStr.includes("23505") ||
+        errStr.includes("candidates_mobile_number_key") ||
+        errStr.includes("unique constraint") ||
+        errStr.includes("already exists")
       ) {
-        alert("यह मोबाइल नंबर पहले से ही रजिस्टर्ड है। कृपया दूसरा मोबाइल नंबर दर्ज करें! (This mobile number is already registered. Please register with another number.)");
+        alert("यह मोबाइल नंबर पहले से ही रजिस्टर्ड है। कृपया दूसरा मोबाइल नंबर दर्ज करें!");
       } else {
-        alert("Error: " + err.message);
+        alert("Error: " + (err.message || "कुछ गड़बड़ हुई, कृपया पुन: प्रयास करें।"));
       }
     } finally {
       setLoading(false);
