@@ -46,12 +46,12 @@ const TRANSLATIONS = {
     navPostJob: 'जॉब पोस्ट',
     quote: '"हर मेहनती नागरिक को उनके शहर में ही इज़्ज़तदार रोज़गार दिलाना HireHere का मुख्य उद्देश्य है।"',
     categories: {
+      factory: 'क्वालिटी इंस्पेक्टर',
       driver: 'ड्राइवर',
       delivery: 'डिलीवरी',
       security: 'सिक्योरिटी',
       electrician: 'इलेक्ट्रीशियन',
-      cleaning: 'हाउसकीपिंग',
-      factory: 'फैक्ट्री वर्कर',
+      cleaning: 'हाउसकीपिंग',      
     },
   },
   en: {
@@ -89,12 +89,12 @@ const TRANSLATIONS = {
     navPostJob: 'Post Job',
     quote: '"Connecting every hardworking individual with dignified local career opportunities is HireHere\'s vision."',
     categories: {
+      factory: 'Quality Inspector'
       driver: 'Driver',
       delivery: 'Delivery',
       security: 'Security',
       electrician: 'Electrician',
-      cleaning: 'Housekeeping',
-      factory: 'Factory Worker',
+      cleaning: 'Housekeeping',      
     },
   },
 };
