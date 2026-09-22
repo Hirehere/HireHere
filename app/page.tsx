@@ -89,7 +89,7 @@ const TRANSLATIONS = {
     navPostJob: 'Post Job',
     quote: '"Connecting every hardworking individual with dignified local career opportunities is HireHere\'s vision."',
     categories: {
-      factory: 'Quality Inspector'
+      factory: 'Quality Inspector',
       driver: 'Driver',
       delivery: 'Delivery',
       security: 'Security',
@@ -100,12 +100,12 @@ const TRANSLATIONS = {
 };
 
 const CATEGORIES_LIST = [
+   { id: 'factory', icon: '🏭' },
   { id: 'driver', icon: '🚗' },
   { id: 'delivery', icon: '📦' },
   { id: 'security', icon: '🛡️' },
   { id: 'electrician', icon: '⚡' },
-  { id: 'cleaning', icon: '🧹' },
-  { id: 'factory', icon: '🏭' },
+  { id: 'cleaning', icon: '🧹' }, 
 ];
 
 export default function JobPortal() {
