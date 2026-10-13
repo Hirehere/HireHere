@@ -1,46 +1,47 @@
-import type { Metadata } from 'next';
-import './globals.css'; // <-- Yeh line CSS ko load karne ke liye zaroori hai
+'use client';
 
-export const metadata: Metadata = {
-  title: 'HireHere - Local Job Portal',
-  description: 'Direct Call and WhatsApp hiring for local workers',
-  icons: {
-    icon: '/icon.png',
-    shortcut: '/icon.png',
-    apple: '/icon.png',
-  },
-  openGraph: {
-    title: 'HireHere - Local Job Portal',
-    description: 'Direct Call and WhatsApp hiring for local workers. Zero fees, 100% verified jobs!',
-    url: 'https://hirehere.in',
-    siteName: 'HireHere',
-    images: [
-      {
-        url: 'https://hirehere.in/icon.png',
-        width: 1200,
-        height: 630,
-        alt: 'HireHere Logo',
-      },
-    ],
-    locale: 'hi_IN',
-    type: 'website',
-  },
-  twitter: {
-    card: 'summary_large_image',
-    title: 'HireHere - Local Job Portal',
-    description: 'Direct Call and WhatsApp hiring for local workers',
-    images: ['https://hirehere.in/icon.png'],
-  },
-};
+import React, { useState, useEffect } from 'react';
+import { supabase } from '../../lib/supabase';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function EmployerLogin() {
+  const [loading, setLoading] = useState(true);
+  const router = useRouter();
+
+  useEffect(() => {
+    async function checkUser() {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session) {
+          router.push('/employer/dashboard');
+        }
+      } catch (error) {
+        console.error("Auth check error:", error);
+      } finally {
+        setLoading(false); // Loading state end hona zaroori hai
+      }
+    }
+    checkUser();
+  }, [router]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <p className="text-gray-600 font-medium">डैशबोर्ड लोड हो रहा है...</p>
+      </div>
+    );
+  }
+
   return (
-    <html lang="hi">
-      <body>{children}</body>
-    </html>
+    <div className="min-h-screen flex items-center justify-center bg-gray-100 p-4">
+      <div className="bg-white p-8 rounded-lg shadow-md max-w-md w-full">
+        <h2 className="text-2xl font-bold text-center mb-6 text-gray-800">Employer Login</h2>
+        {/* Aapka Login Form Form Elements Yahan Aayenge */}
+        <p className="text-center text-sm text-gray-600">
+          Aapka Login Form yahan active ho jayega.
+        </p>
+      </div>
+    </div>
   );
 }
