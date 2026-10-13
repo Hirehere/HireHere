@@ -3,6 +3,9 @@ import type { Metadata } from 'next';
 export const metadata: Metadata = {
   title: 'HireHere - Local Job Portal',
   description: 'Direct Call and WhatsApp hiring for local workers',
+  icons: {
+    icon: '/icon.png',
+  },
   openGraph: {
     title: 'HireHere - Local Job Portal',
     description: 'Direct Call and WhatsApp hiring for local workers. Zero fees, 100% verified jobs!',
@@ -10,7 +13,7 @@ export const metadata: Metadata = {
     siteName: 'HireHere',
     images: [
       {
-        url: 'https://hirehere.in/logo.png', // आपके लोगो का पूरा URL
+        url: 'https://hirehere.in/logo.png',
         width: 1200,
         height: 630,
         alt: 'HireHere Logo',

@@ -4,9 +4,9 @@ import React, { useState, useEffect } from 'react';
 import { createClient } from '@supabase/supabase-js';
 import Link from 'next/link';
 
-// Safe Supabase Client Initialization (Prevents Prerender Build Errors)
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co';
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder-key';
+// Supabase Client Initialization (Direct Keys + Env Fallback)
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://tumyhkuybineeodtgcka.supabase.co';
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'sb_publishable_HDaKMDhyr6HkCXEVYX8apg_s2cdR9hg';
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 // Professional Translation Dictionary with updated Hero texts
@@ -100,7 +100,7 @@ const TRANSLATIONS = {
 };
 
 const CATEGORIES_LIST = [
-   { id: 'factory', icon: '🏭' },
+  { id: 'factory', icon: '🏭' },
   { id: 'driver', icon: '🚗' },
   { id: 'delivery', icon: '📦' },
   { id: 'security', icon: '🛡️' },
@@ -124,7 +124,6 @@ export default function JobPortal() {
     }
   }, []);
 
-  // Language Change Handler with immediate re-render trigger
   const handleLanguageChange = (newLang: 'hi' | 'en') => {
     setLang(newLang);
     localStorage.setItem('app_lang', newLang);
@@ -146,12 +145,12 @@ export default function JobPortal() {
 
       const { data, error } = await query;
       if (error) {
-        console.error('Error fetching jobs:', error);
+        console.error('Error fetching jobs:', error.message || error);
       } else {
         setJobs(data || []);
       }
-    } catch (err) {
-      console.error('Fetch error:', err);
+    } catch (err: any) {
+      console.error('Fetch error:', err.message || err);
     } finally {
       setLoading(false);
     }
@@ -180,7 +179,6 @@ export default function JobPortal() {
             </div>
           </div>
 
-          {/* WORKING LANGUAGE SELECTOR DROPDOWN */}
           <div className="flex items-center gap-2 md:gap-3">
             <div className="relative inline-block">
               <select
@@ -193,7 +191,6 @@ export default function JobPortal() {
               </select>
             </div>
 
-            {/* WORKER REGISTER BUTTON */}
             <Link
               href="/employee"
               className="bg-white text-[#0d47a1] hover:bg-gray-100 font-extrabold text-xs md:text-sm px-3 py-2 rounded-lg transition shadow-sm"
@@ -201,7 +198,6 @@ export default function JobPortal() {
               {t.workerRegister}
             </Link>
 
-            {/* JOB POST BUTTON */}
             <Link
               href="/post-job"
               className="bg-[#ff6f00] hover:bg-[#e65100] text-white font-extrabold text-xs md:text-sm px-3 py-2 rounded-lg transition shadow-sm"
@@ -222,7 +218,6 @@ export default function JobPortal() {
             {t.heroSubtitle}
           </p>
 
-          {/* Dual Main Action Buttons */}
           <div className="grid grid-cols-2 gap-4 mb-8 max-w-lg mx-auto">
             <Link
               href="/employee"
@@ -240,7 +235,6 @@ export default function JobPortal() {
             </Link>
           </div>
 
-          {/* Search Box */}
           <div className="bg-white rounded-xl p-2 shadow-xl flex items-center max-w-2xl mx-auto">
             <input
               type="text"
@@ -258,7 +252,6 @@ export default function JobPortal() {
             </button>
           </div>
 
-          {/* Trust Badges */}
           <div className="flex justify-center flex-wrap gap-4 md:gap-6 mt-6 text-xs md:text-sm font-semibold text-blue-100">
             <span>{t.trust1}</span>
             <span>{t.trust2}</span>
@@ -313,7 +306,6 @@ export default function JobPortal() {
           {t.recentJobs} <span className="text-[#ff6f00]">{t.cityHighlight}</span> {t.recentJobsSuffix}
         </h2>
 
-        {/* Filter Tabs */}
         <div className="flex gap-2 overflow-x-auto pb-4 mb-4 scrollbar-none">
           {['all', 'driver', 'delivery', 'security', 'factory', 'electrician'].map((tab) => (
             <button
@@ -333,7 +325,6 @@ export default function JobPortal() {
           ))}
         </div>
 
-        {/* Jobs Grid */}
         {loading ? (
           <p className="text-center text-gray-500 py-16 text-base font-bold">{t.loadingText}</p>
         ) : jobs.length === 0 ? (
@@ -364,13 +355,12 @@ export default function JobPortal() {
 
                   <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-gray-600 mb-4">
                     <span className="font-extrabold text-[#2e7d32]">
-                      💰 ₹{job.min_salary?.toLocaleString()} - ₹{job.max_salary?.toLocaleString()}{t.monthSalary}
+                      💰 ₹{job.min_salary?.toLocaleString() || 0} - ₹{job.max_salary?.toLocaleString() || 0} {t.monthSalary}
                     </span>
                     <span>📍 {job.location_city}</span>
                   </div>
                 </div>
 
-                {/* Direct Action Buttons */}
                 <div className="flex gap-3 pt-3 border-t border-gray-100 mt-2">
                   <a
                     href={`tel:${job.hr_call_number}`}

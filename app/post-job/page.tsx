@@ -22,22 +22,37 @@ export default function PostJob() {
     e.preventDefault();
     setLoading(true);
 
-    const { error } = await supabase.from('jobs').insert([
-      {
-        ...formData,
-        min_salary: Number(formData.min_salary),
-        max_salary: Number(formData.max_salary),
-        is_verified: true,
-      },
-    ]);
+    try {
+      // 1. Current Logged-in Employer fetch karein
+      const { data: userData } = await supabase.auth.getUser();
 
-    if (error) {
-      alert('Error: ' + error.message);
-    } else {
-      alert('🎉 Job safaltapurvak post ho gayi hai!');
-      router.push('/');
+      // 2. Jobs Table me Data Insert karein (employer_id ke saath)
+      const { error } = await supabase.from('jobs').insert([
+        {
+          ...formData,
+          min_salary: Number(formData.min_salary),
+          max_salary: Number(formData.max_salary),
+          is_verified: true,
+          employer_id: userData?.user?.id || null, // Active Employer ki ID yahan link hogi
+        },
+      ]);
+
+      if (error) {
+        alert('Error: ' + error.message);
+      } else {
+        alert('🎉 Job safaltapurvak post ho gayi hai!');
+        // Login employer ko uske dashboard par redirect karein (ya home page par)
+        if (userData?.user) {
+          router.push('/employer/dashboard');
+        } else {
+          router.push('/');
+        }
+      }
+    } catch (err: any) {
+      alert('Error: ' + err.message);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   return (
