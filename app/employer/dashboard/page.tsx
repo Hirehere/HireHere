@@ -107,8 +107,8 @@ export default function EmployerDashboard() {
                 <div key={job.id} className="bg-white p-5 rounded-xl border shadow-sm">
                   <h3 className="font-bold text-[#0d47a1] text-lg">{job.title}</h3>
                   <p className="text-xs text-gray-500 mt-1">
-                    📍 {job.location_city} | 💰 ₹{job.min_salary} - ₹{job.max_salary}
-                  </p>
+  📍 {job.location_city} | 💰 ₹{job.min_salary} - ₹{job.max_salary}
+</p>
                   <p className="text-xs bg-blue-50 text-blue-700 px-2 py-1 rounded w-max mt-2">
                     कैटेगरी: {job.category}
                   </p>

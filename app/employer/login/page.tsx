@@ -1,172 +1,97 @@
 'use client';
 
-import React, { useState, useEffect } from 'react'; // <-- यहाँ useEffect को जोड़ लें
-import { createClient } from '@supabase/supabase-js';
+import React, { useState } from 'react';
+import { supabase } from '../../lib/supabase';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
-// Safe Supabase Client Initialization
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co';
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder-key';
-const supabase = createClient(supabaseUrl, supabaseAnonKey);
-
-export default function EmployerAuth() {
-  const [user, setUser] = useState<any>(null);
-  const [postedJobs, setPostedJobs] = useState<any[]>([]);
-  const [candidates, setCandidates] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+export default function EmployerLogin() {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState('');
   const router = useRouter();
 
-  useEffect(() => {
-    const checkUser = async () => {
-      const { data } = await supabase.auth.getUser();
-      if (!data.user) {
-        router.push('/employer/login');
-        return;
-      }
-      setUser(data.user);
-      fetchDashboardData(data.user.id);
-    };
-    checkUser();
-  }, [router]);
-
-  const fetchDashboardData = async (employerId: string) => {
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
     setLoading(true);
+    setErrorMsg('');
+
     try {
-      // 1. Fetch Employer's Jobs
-      const { data: jobData } = await supabase
-        .from('jobs')
-        .select('*')
-        .eq('employer_id', employerId)
-        .order('created_at', { ascending: false });
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
 
-      setPostedJobs(jobData || []);
-
-      // 2. Fetch Candidates/Resumes
-      const { data: candidateData } = await supabase
-        .from('candidates')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      setCandidates(candidateData || []);
-    } catch (err) {
-      console.error(err);
+      if (error) {
+        setErrorMsg(error.message);
+      } else if (data.session) {
+        router.push('/employer/dashboard');
+      }
+    } catch (err: any) {
+      setErrorMsg('Login में समस्या आई। कृपया पुनः प्रयास करें।');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
-    router.push('/employer/login');
-  };
-
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-100">
-        <p className="font-bold text-gray-600">डैशबोर्ड लोड हो रहा है...</p>
-      </div>
-    );
-  }
-
   return (
-    <div className="min-h-screen bg-gray-50 pb-12 text-gray-800">
-      <header className="bg-[#0d47a1] text-white p-4 shadow-md flex justify-between items-center">
-        <div>
-          <h1 className="text-xl font-black">
+    <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
+      <div className="bg-white p-8 rounded-2xl shadow-lg max-w-md w-full">
+        <div className="text-center mb-6">
+          <h1 className="text-2xl font-black text-[#0d47a1]">
             Hire<span className="text-[#ff6f00]">Here</span> Employer Portal
           </h1>
-          <p className="text-xs text-blue-200">{user?.email}</p>
+          <p className="text-sm text-gray-500 mt-1">अपने Employer Account में Login करें</p>
         </div>
-        <div className="flex gap-2">
-          <Link
-            href="/post-job"
-            className="bg-[#ff6f00] text-white px-3 py-1.5 rounded-lg text-xs font-bold"
-          >
-            + नई जॉब पोस्ट करें
-          </Link>
-          <button
-            onClick={handleLogout}
-            className="bg-red-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold"
-          >
-            लॉगआउट
-          </button>
-        </div>
-      </header>
 
-      <main className="max-w-6xl mx-auto p-4 md:p-6 space-y-8">
-        <section>
-          <h2 className="text-lg font-bold text-gray-800 mb-4">
-            📌 आपके द्वारा पोस्ट की गई नौकरियां ({postedJobs.length})
-          </h2>
-
-          {postedJobs.length === 0 ? (
-            <div className="bg-white p-6 rounded-xl border text-center text-gray-500">
-              आपने अभी तक कोई जॉब पोस्ट नहीं की है।
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {postedJobs.map((job) => (
-                <div key={job.id} className="bg-white p-5 rounded-xl border shadow-sm">
-                  <h3 className="font-bold text-[#0d47a1] text-lg">{job.title}</h3>
-                  <p className="text-xs text-gray-500">📍 {job.location_city} | 💰 ₹{job.min_salary} - ₹{job.max_salary}</p>
-                  <p className="text-xs bg-blue-50 text-blue-700 px-2 py-1 rounded w-max mt-2">
-                    कैटेगरी: {job.category}
-                  </p>
-                </div>
-              ))}
-            </div>
-          )}
-        </section>
-
-        <section>
-          <h2 className="text-lg font-bold text-gray-800 mb-4">
-            📋 उपलब्ध वर्कर एवं सीवी (Candidates & Responses)
-          </h2>
-
-          <div className="overflow-x-auto bg-white rounded-xl border shadow-sm">
-            <table className="w-full text-left text-xs md:text-sm">
-              <thead className="bg-gray-100 border-b">
-                <tr>
-                  <th className="p-3">नाम</th>
-                  <th className="p-3">मोबाइल</th>
-                  <th className="p-3">शहर</th>
-                  <th className="p-3">पद</th>
-                  <th className="p-3">सीवी / रेज़्यूमे</th>
-                </tr>
-              </thead>
-              <tbody>
-                {candidates.map((c) => (
-                  <tr key={c.id} className="border-b hover:bg-gray-50">
-                    <td className="p-3 font-bold">{c.full_name}</td>
-                    <td className="p-3">
-                      <a href={`tel:${c.phone}`} className="text-blue-600 font-bold underline">
-                        📞 {c.phone}
-                      </a>
-                    </td>
-                    <td className="p-3">{c.city}</td>
-                    <td className="p-3">{c.designation}</td>
-                    <td className="p-3">
-                      {c.resume_url ? (
-                        <a
-                          href={c.resume_url}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="bg-green-600 text-white px-2.5 py-1 rounded text-xs font-bold"
-                        >
-                          📄 CV देखें
-                        </a>
-                      ) : (
-                        <span className="text-gray-400">नहीं है</span>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+        {errorMsg && (
+          <div className="bg-red-50 text-red-600 p-3 rounded-lg text-sm mb-4 border border-red-200">
+            {errorMsg}
           </div>
-        </section>
-      </main>
+        )}
+
+        <form onSubmit={handleLogin} className="space-y-4">
+          <div>
+            <label className="block text-xs font-bold text-gray-700 mb-1">Email Address</label>
+            <input
+              type="email"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="employer@company.com"
+              className="w-full p-3 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-bold text-gray-700 mb-1">Password</label>
+            <input
+              type="password"
+              required
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="••••••••"
+              className="w-full p-3 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+            />
+          </div>
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full bg-[#0d47a1] text-white py-3 rounded-lg font-bold text-sm hover:bg-blue-800 transition disabled:opacity-50"
+          >
+            {loading ? 'Logging in...' : 'Login करें'}
+          </button>
+        </form>
+
+        <div className="mt-6 text-center text-xs text-gray-500">
+          खाता नहीं है?{' '}
+          <Link href="/employer/register" className="text-blue-600 font-bold underline">
+            नया Account बनाएं
+          </Link>
+        </div>
+      </div>
     </div>
   );
 }
