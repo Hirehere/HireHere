@@ -14,6 +14,7 @@ const TRANSLATIONS = {
   hi: {
     workerRegister: '👤 वर्कर रजिस्ट्रेशन',
     jobPost: '+ जॉब पोस्ट करें',
+    employerLogin: '🏢 एप्लॉयडर लॉगिन',
     heroTitle: 'Your Dream Job is',
     heroTitleHighlight: 'Just a Click Away.',
     heroTitleSuffix: '',
@@ -57,6 +58,7 @@ const TRANSLATIONS = {
   en: {
     workerRegister: '👤 Worker Register',
     jobPost: '+ Post a Job',
+    employerLogin: '🏢 Employer Login',
     heroTitle: 'Your Dream Job is',
     heroTitleHighlight: 'Just a Click Away.',
     heroTitleSuffix: '',
@@ -179,7 +181,7 @@ export default function JobPortal() {
             </div>
           </div>
 
-          <div className="flex items-center gap-2 md:gap-3">
+          <div className="flex items-center gap-2 md:gap-3 flex-wrap">
             <div className="relative inline-block">
               <select
                 value={lang}
@@ -190,6 +192,13 @@ export default function JobPortal() {
                 <option value="en" className="text-black">🌐 English</option>
               </select>
             </div>
+
+            <Link
+              href="/employer/login"
+              className="bg-white/10 hover:bg-white/20 border border-white/30 text-white font-bold text-xs md:text-sm px-3 py-2 rounded-lg transition"
+            >
+              {t.employerLogin}
+            </Link>
 
             <Link
               href="/employee"
@@ -260,7 +269,7 @@ export default function JobPortal() {
         </div>
       </section>
 
-      {/* ===== CATEGORIES SECTION ===== */}
+      {/* ===== CATEGories SECTION ===== */}
       <section className="w-full px-6 py-8">
         <h2 className="text-xl md:text-2xl font-black text-[#0d47a1] mb-4">
           {t.catQuestion} <span className="text-[#ff6f00]">{t.catQuestionHighlight}</span> {t.catQuestionSuffix}
