@@ -13,14 +13,13 @@ const supabase = createClient(supabaseUrl, supabaseAnonKey);
 const TRANSLATIONS = {
   hi: {
     workerRegister: '👤 वर्कर रजिस्ट्रेशन',
-    jobPost: '+ जॉब पोस्ट करें',
-    employerLogin: '🏢 एप्लॉयडर लॉगिन',
+    employerZone: '🏢 एप्लॉयडर ज़ोन (लॉगिन / जॉब पोस्ट)',
     heroTitle: 'Your Dream Job is',
     heroTitleHighlight: 'Just a Click Away.',
     heroTitleSuffix: '',
     heroSubtitle: 'ज़ीरो फीस ! 2-मिनट में अप्लाई करें। 100% वेरिफाइड जॉब्स। तुरंत नौकरी पाएं!',
     wantJob: 'मुझे काम चाहिए',
-    wantWorker: 'मुझे वर्कर चाहिए',
+    wantWorker: 'मुझे वर्कर चाहिए (Employer)',
     searchPlaceholder: 'अपना शहर लिखें (उदा. Pune, Mumbai, Delhi)...',
     searchBtn: '🔍 खोजें',
     trust1: '✅ 100% वेरिफाइड जॉब्स',
@@ -38,13 +37,13 @@ const TRANSLATIONS = {
     allJobs: 'सभी नौकरियां',
     loadingText: 'नौकरियां लोड हो रही हैं...',
     noJobsFound: 'कोई जॉब नहीं मिली।',
-    noJobsSub: "पहली जॉब लिस्ट करने के लिए ऊपर '+ जॉब पोस्ट करें' पर क्लिक करें।",
+    noJobsSub: 'नया जॉब लिस्ट करने के लिए ऊपर एप्लॉयडर ज़ोन में जाएं।',
     verifiedBadge: '✅ वेरिफाइड कंपनी',
     monthSalary: '/महीना',
     applyCallBtn: '📞 कॉल करें / अप्लाई करें',
     navHome: 'होम',
     navJobs: 'नौकरियां',
-    navPostJob: 'जॉब पोस्ट',
+    navEmployer: 'एप्लॉयडर',
     quote: '"हर मेहनती नागरिक को उनके शहर में ही इज़्ज़तदार रोज़गार दिलाना HireHere का मुख्य उद्देश्य है।"',
     categories: {
       factory: 'क्वालिटी इंस्पेक्टर',
@@ -57,14 +56,13 @@ const TRANSLATIONS = {
   },
   en: {
     workerRegister: '👤 Worker Register',
-    jobPost: '+ Post a Job',
-    employerLogin: '🏢 Employer Login',
+    employerZone: '🏢 Employer Zone (Login / Post Job)',
     heroTitle: 'Your Dream Job is',
     heroTitleHighlight: 'Just a Click Away.',
     heroTitleSuffix: '',
     heroSubtitle: 'Zero Fees ! 2-Minute Apply. 100% Verified Jobs. Get Hired Fast!',
     wantJob: 'I Need a Job',
-    wantWorker: 'I Need Workers',
+    wantWorker: 'I Need Workers (Employer)',
     searchPlaceholder: 'Type your city (e.g. Pune, Mumbai, Delhi)...',
     searchBtn: '🔍 Search',
     trust1: '✅ 100% Verified Jobs',
@@ -82,13 +80,13 @@ const TRANSLATIONS = {
     allJobs: 'All Jobs',
     loadingText: 'Loading jobs...',
     noJobsFound: 'No jobs found.',
-    noJobsSub: "To list the first job, click on '+ Post a Job' at the top right.",
+    noJobsSub: 'To list a job, go to Employer Zone above.',
     verifiedBadge: '✅ Verified Company',
     monthSalary: '/month',
     applyCallBtn: '📞 Apply / Direct Call',
     navHome: 'Home',
     navJobs: 'Jobs',
-    navPostJob: 'Post Job',
+    navEmployer: 'Employer Zone',
     quote: '"Connecting every hardworking individual with dignified local career opportunities is HireHere\'s vision."',
     categories: {
       factory: 'Quality Inspector',
@@ -118,7 +116,6 @@ export default function JobPortal() {
   const [searchLocation, setSearchLocation] = useState('');
   const [activeTab, setActiveTab] = useState('all');
 
-  // Load saved language on mount
   useEffect(() => {
     const savedLang = localStorage.getItem('app_lang') as 'hi' | 'en';
     if (savedLang === 'en' || savedLang === 'hi') {
@@ -193,11 +190,12 @@ export default function JobPortal() {
               </select>
             </div>
 
+            {/* Combined Employer Link in Header */}
             <Link
               href="/employer/login"
-              className="bg-white/10 hover:bg-white/20 border border-white/30 text-white font-bold text-xs md:text-sm px-3 py-2 rounded-lg transition"
+              className="bg-[#ff6f00] hover:bg-[#e65100] text-white font-extrabold text-xs md:text-sm px-3 py-2 rounded-lg transition shadow-sm"
             >
-              {t.employerLogin}
+              {t.employerZone}
             </Link>
 
             <Link
@@ -205,13 +203,6 @@ export default function JobPortal() {
               className="bg-white text-[#0d47a1] hover:bg-gray-100 font-extrabold text-xs md:text-sm px-3 py-2 rounded-lg transition shadow-sm"
             >
               {t.workerRegister}
-            </Link>
-
-            <Link
-              href="/post-job"
-              className="bg-[#ff6f00] hover:bg-[#e65100] text-white font-extrabold text-xs md:text-sm px-3 py-2 rounded-lg transition shadow-sm"
-            >
-              {t.jobPost}
             </Link>
           </div>
         </div>
@@ -235,9 +226,11 @@ export default function JobPortal() {
               <span className="text-2xl">📱</span>
               <span>{t.wantJob}</span>
             </Link>
+
+            {/* Combined Employer Link in Hero CTA */}
             <Link
-              href="/post-job"
-              className="bg-white text-[#0d47a1] p-4 rounded-xl font-extrabold text-sm md:text-base flex flex-col sm:flex-row items-center justify-center gap-2 shadow-lg active:scale-95 transition"
+              href="/employer/login"
+              className="bg-white text-[#0d47a1] p-4 rounded-xl font-extrabold text-sm md:text-base flex flex-col sm:flex-row items-center justify-center gap-2 shadow-lg active:scale-95 transition hover:bg-gray-50"
             >
               <span className="text-2xl">🏢</span>
               <span>{t.wantWorker}</span>
@@ -269,7 +262,7 @@ export default function JobPortal() {
         </div>
       </section>
 
-      {/* ===== CATEGories SECTION ===== */}
+      {/* ===== CATEGORIES SECTION ===== */}
       <section className="w-full px-6 py-8">
         <h2 className="text-xl md:text-2xl font-black text-[#0d47a1] mb-4">
           {t.catQuestion} <span className="text-[#ff6f00]">{t.catQuestionHighlight}</span> {t.catQuestionSuffix}
@@ -448,11 +441,11 @@ export default function JobPortal() {
           <span>{t.navJobs}</span>
         </button>
         <Link
-          href="/post-job"
+          href="/employer/login"
           className="flex flex-col items-center text-gray-500 font-bold text-[11px]"
         >
-          <span className="text-xl">📋</span>
-          <span>{t.navPostJob}</span>
+          <span className="text-xl">🏢</span>
+          <span>{t.navEmployer}</span>
         </Link>
       </nav>
     </div>
