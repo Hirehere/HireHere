@@ -1,9 +1,9 @@
 import type { Metadata } from 'next';
+import './globals.css'; // <-- Yeh line CSS ko load karne ke liye zaroori hai
 
 export const metadata: Metadata = {
   title: 'HireHere - Local Job Portal',
   description: 'Direct Call and WhatsApp hiring for local workers',
-  // Yahan apka icon.png connect ho gaya hai
   icons: {
     icon: '/icon.png',
     shortcut: '/icon.png',
