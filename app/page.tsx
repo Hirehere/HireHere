@@ -262,9 +262,9 @@ export default function JobPortal() {
         </div>
       </section>
 
-      {/* ===== 10-SECOND SHORT VIDEO SECTION WITH AUDIO TOGGLE ===== */}
-      <section className="w-full px-6 py-8 flex flex-col items-center justify-center">
-        <div className="relative w-full max-w-md rounded-2xl overflow-hidden shadow-xl border-4 border-white bg-black group">
+    {/* ===== 10-SECOND SHORT VIDEO SECTION WITH AUDIO TOGGLE ===== */}
+      <section className="w-full px-6 py-4 flex flex-col items-center justify-center">
+        <div className="relative w-full max-w-[240px] rounded-xl overflow-hidden shadow-md border-2 border-white bg-black group">
           <video
             id="heroVideo"
             src="/hero-video.mp4"
@@ -272,7 +272,7 @@ export default function JobPortal() {
             loop
             muted
             playsInline
-            className="w-full h-auto object-cover"
+            className="w-full h-auto object-cover max-h-[320px]"
           />
           
           {/* Audio Control Button */}
@@ -285,14 +285,11 @@ export default function JobPortal() {
                 e.currentTarget.innerText = video.muted ? '🔇 Unmute' : '🔊 Mute';
               }
             }}
-            className="absolute bottom-3 right-3 bg-black/70 hover:bg-black text-white text-xs font-bold px-3 py-1.5 rounded-full backdrop-blur-sm transition border border-white/30 cursor-pointer"
+            className="absolute bottom-2 right-2 bg-black/70 hover:bg-black text-white text-[10px] font-bold px-2.5 py-1 rounded-full backdrop-blur-sm transition border border-white/30 cursor-pointer"
           >
             🔇 Unmute
           </button>
         </div>
-        <p className="text-xs md:text-sm text-gray-600 mt-2 font-bold">
-          
-        </p>
       </section>
 
       {/* ===== CATEGORIES SECTION ===== */}
