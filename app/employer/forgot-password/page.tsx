@@ -18,7 +18,7 @@ export default function ForgotPassword() {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
-  // 1. Verify Company Name, Email & Phone against 'employers' table
+  // 1. Verify Company First Name, Email & Phone against 'employers' table
   const handleVerifyDetails = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg('');
@@ -26,7 +26,9 @@ export default function ForgotPassword() {
 
     const cleanEmail = email.trim().toLowerCase();
     const cleanPhone = phone.trim().replace(/\D/g, '');
-    const cleanCompany = companyName.trim();
+    
+    // Extract first word of input company name (before first space)
+    const inputFirstWord = companyName.trim().split(/\s+/)[0]?.toLowerCase() || '';
 
     try {
       const { data: employer, error } = await supabase
@@ -41,15 +43,17 @@ export default function ForgotPassword() {
         return;
       }
 
-      // Checking company name from possible database columns (company_name, company, name, full_name)
-      const dbCompany = String(
+      // Get DB company name and extract its first word
+      const dbCompanyFull = String(
         employer.company_name || employer.company || employer.name || employer.full_name || ''
-      ).trim().toLowerCase();
-      
+      ).trim();
+      const dbFirstWord = dbCompanyFull.split(/\s+/)[0]?.toLowerCase() || '';
+
       const dbPhone = String(employer.phone || '').trim().replace(/\D/g, '');
 
-      if (dbCompany !== cleanCompany.toLowerCase() || dbPhone !== cleanPhone) {
-        setErrorMsg('Darj ki gayi Company Name ya Mobile Number is email ID se match nahi kar raha hai.');
+      // Check if first word of company name matches (ignoring case) and phone matches
+      if (dbFirstWord !== inputFirstWord || dbPhone !== cleanPhone) {
+        setErrorMsg('Company ka pehla naam ya mobile number is email ID se match nahi kar raha hai.');
         setLoading(false);
         return;
       }
@@ -111,7 +115,7 @@ export default function ForgotPassword() {
           </h1>
           <p className="text-gray-500 text-sm mt-1">
             {step === 1 
-              ? 'Apni Company ka naam, registered email aur mobile number darj karein.' 
+              ? 'Apni Company ka pehla naam, registered email aur mobile number darj karein.' 
               : 'Apne khate ke liye naya password darj karein.'}
           </p>
         </div>
@@ -132,14 +136,14 @@ export default function ForgotPassword() {
           <form onSubmit={handleVerifyDetails} className="space-y-4">
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-1">
-                Company Name (कंपनी का नाम)
+                Company First Name (कंपनी का पहला नाम)
               </label>
               <input
                 type="text"
                 required
                 value={companyName}
                 onChange={(e) => setCompanyName(e.target.value)}
-                placeholder="Jaise: Manufyn India"
+                placeholder="Jaise: Manufyn"
                 className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-gray-800"
               />
             </div>
