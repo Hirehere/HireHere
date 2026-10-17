@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 
 export default function EmployerDashboard() {
   const [activeTab, setActiveTab] = useState<'applicants' | 'post-job' | 'candidates'>('applicants');
+  const [lang, setLang] = useState<'hi' | 'en'>('hi'); // Language state
   const [user, setUser] = useState<any>(null);
   const [jobs, setJobs] = useState<any[]>([]);
   const [applications, setApplications] = useState<any[]>([]);
@@ -45,23 +46,35 @@ export default function EmployerDashboard() {
         .eq('employer_id', employerId)
         .order('created_at', { ascending: false });
       
-      setJobs(jobData || []);
+      const currentJobs = jobData || [];
+      setJobs(currentJobs);
 
-      // 2. Fetch Job Applications for these jobs
+      // 2. Fetch Job Applications for these specific jobs
       const { data: appData } = await supabase
         .from('job_applications')
         .select('*, jobs(title)')
         .eq('employer_id', employerId);
 
-      setApplications(appData || []);
+      const currentApps = appData || [];
+      setApplications(currentApps);
 
-      // 3. Fetch All Candidate Profiles / Responses
-      const { data: candidateData } = await supabase
-        .from('candidates')
-        .select('*')
-        .order('created_at', { ascending: false });
+      // 3. Filter Candidates who applied ONLY to this employer's jobs
+      // Extract unique applicant phones or emails from applications
+      if (currentJobs.length > 0) {
+        const jobIds = currentJobs.map((j) => j.id);
+        
+        // Fetch candidates matching job applications for this employer's jobs
+        const { data: candidateData } = await supabase
+          .from('job_applications')
+          .select('applicant_name, applicant_phone, created_at, jobs(title, location_city)')
+          .in('job_id', jobIds)
+          .order('created_at', { ascending: false });
 
-      setCandidates(candidateData || []);
+        setCandidates(candidateData || []);
+      } else {
+        setCandidates([]);
+      }
+
     } catch (err) {
       console.error(err);
     } finally {
@@ -73,11 +86,10 @@ export default function EmployerDashboard() {
     e.preventDefault();
     if (!user) return;
 
-    // Determine category: custom value if 'Other' selected, else standard option
     const finalCategory = category === 'Other' ? customCategory.trim() : category;
 
     if (!finalCategory) {
-      alert('Kripya category darj karein.');
+      alert(lang === 'hi' ? 'कृपया कैटेगिरी दर्ज करें।' : 'Please enter category.');
       return;
     }
 
@@ -93,24 +105,24 @@ export default function EmployerDashboard() {
     ]);
 
     if (!error) {
-      alert('Job Posted Successfully!');
+      alert(lang === 'hi' ? 'जॉब सफलतापूर्वक पोस्ट हो गई!' : 'Job Posted Successfully!');
       setJobTitle('');
       setCompany('');
       setLocation('');
       setSalary('');
       setCategory('Driver');
       setCustomCategory('');
-      setActiveTab('applicants'); // Switch back to applicants tab
+      setActiveTab('applicants');
       fetchEmployerData(user.id);
     } else {
-      alert('Error posting job: ' + error.message);
+      alert('Error: ' + error.message);
     }
   };
 
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-100">
-        <p className="font-bold text-gray-600">डैशबोर्ड लोड हो रहा है...</p>
+        <p className="font-bold text-gray-600">डैशबोर्ड लोड हो रहा है / Loading...</p>
       </div>
     );
   }
@@ -119,7 +131,7 @@ export default function EmployerDashboard() {
     <div className="min-h-screen bg-gray-50 p-4 md:p-6 pb-12">
       <div className="max-w-6xl mx-auto bg-white rounded-xl shadow-md p-6">
         
-        {/* Header */}
+        {/* Header & Language Toggle */}
         <div className="flex justify-between items-center border-b pb-4 mb-6 flex-wrap gap-4">
           <div>
             <h1 className="text-2xl font-black text-gray-800">
@@ -127,15 +139,26 @@ export default function EmployerDashboard() {
             </h1>
             <p className="text-sm text-gray-500">{user?.email}</p>
           </div>
-          <button
-            onClick={async () => {
-              await supabase.auth.signOut();
-              router.push('/employer/login');
-            }}
-            className="bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-red-700"
-          >
-            लॉगआउट (Logout)
-          </button>
+
+          <div className="flex items-center gap-3">
+            {/* Language Switch Button */}
+            <button
+              onClick={() => setLang(lang === 'hi' ? 'en' : 'hi')}
+              className="bg-gray-200 text-gray-800 px-3 py-2 rounded-lg text-sm font-bold hover:bg-gray-300 transition"
+            >
+              🌐 {lang === 'hi' ? 'English' : 'हिंदी'}
+            </button>
+
+            <button
+              onClick={async () => {
+                await supabase.auth.signOut();
+                router.push('/employer/login');
+              }}
+              className="bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-red-700"
+            >
+              {lang === 'hi' ? 'लॉगआउट (Logout)' : 'Logout'}
+            </button>
+          </div>
         </div>
 
         {/* Tab Navigation */}
@@ -148,7 +171,7 @@ export default function EmployerDashboard() {
                 : 'text-gray-500'
             }`}
           >
-            📋 Candidates & Applications ({applications.length})
+            📋 {lang === 'hi' ? `कैंडिडेट्स और आवेदन (${applications.length})` : `Candidates & Applications (${applications.length})`}
           </button>
           <button
             onClick={() => setActiveTab('candidates')}
@@ -158,7 +181,7 @@ export default function EmployerDashboard() {
                 : 'text-gray-500'
             }`}
           >
-            👥 उपलब्ध वर्कर सीवी ({candidates.length})
+            👥 {lang === 'hi' ? `मेरी जॉब्स के आवेदक (${candidates.length})` : `Applicants for My Jobs (${candidates.length})`}
           </button>
           <button
             onClick={() => setActiveTab('post-job')}
@@ -168,25 +191,29 @@ export default function EmployerDashboard() {
                 : 'text-gray-500'
             }`}
           >
-            ➕ नई जॉब पोस्ट करें
+            ➕ {lang === 'hi' ? 'नई जॉब पोस्ट करें' : 'Post New Job'}
           </button>
         </div>
 
         {/* TAB 1: Job Applications */}
         {activeTab === 'applicants' && (
           <div>
-            <h2 className="text-lg font-bold mb-4">Received Job Applications</h2>
+            <h2 className="text-lg font-bold mb-4">
+              {lang === 'hi' ? 'प्राप्त जॉब आवेदन (Received Applications)' : 'Received Job Applications'}
+            </h2>
             {applications.length === 0 ? (
-              <p className="text-gray-500 py-8 text-center bg-gray-50 rounded-lg border">No applications received yet.</p>
+              <p className="text-gray-500 py-8 text-center bg-gray-50 rounded-lg border">
+                {lang === 'hi' ? 'अभी तक कोई आवेदन प्राप्त नहीं हुआ है।' : 'No applications received yet.'}
+              </p>
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse">
                   <thead>
                     <tr className="bg-gray-100 text-gray-700 text-sm">
-                      <th className="p-3 border">Candidate Name</th>
-                      <th className="p-3 border">Phone / WhatsApp</th>
-                      <th className="p-3 border">Applied For Job</th>
-                      <th className="p-3 border">Date</th>
+                      <th className="p-3 border">{lang === 'hi' ? 'कैंडिडेट का नाम' : 'Candidate Name'}</th>
+                      <th className="p-3 border">{lang === 'hi' ? 'फ़ोन / व्हाट्सएप' : 'Phone / WhatsApp'}</th>
+                      <th className="p-3 border">{lang === 'hi' ? 'किस जॉब के लिए' : 'Applied For Job'}</th>
+                      <th className="p-3 border">{lang === 'hi' ? 'दिनांक' : 'Date'}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -211,9 +238,13 @@ export default function EmployerDashboard() {
 
             {/* Posted Jobs Summary Box */}
             <div className="mt-8">
-              <h3 className="text-md font-bold text-gray-800 mb-3">📌 आपकी पोस्ट की गई नौकरियां ({jobs.length})</h3>
+              <h3 className="text-md font-bold text-gray-800 mb-3">
+                {lang === 'hi' ? `📌 आपकी पोस्ट की गई नौकरियां (${jobs.length})` : `📌 Your Posted Jobs (${jobs.length})`}
+              </h3>
               {jobs.length === 0 ? (
-                <p className="text-sm text-gray-500">आपने अभी तक कोई जॉब पोस्ट नहीं की है।</p>
+                <p className="text-sm text-gray-500">
+                  {lang === 'hi' ? 'आपने अभी तक कोई जॉब पोस्ट नहीं की है।' : 'You have not posted any jobs yet.'}
+                </p>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   {jobs.map((job) => (
@@ -228,60 +259,55 @@ export default function EmployerDashboard() {
           </div>
         )}
 
-        {/* TAB 2: All Candidates List */}
+        {/* TAB 2: Candidates who applied to employer's jobs */}
         {activeTab === 'candidates' && (
           <div>
-            <h2 className="text-lg font-bold mb-4">उपलब्ध वर्कर एवं सीवी (All Worker Profiles)</h2>
-            <div className="overflow-x-auto bg-white rounded-xl border shadow-sm">
-              <table className="w-full text-left text-xs md:text-sm">
-                <thead className="bg-gray-100 border-b">
-                  <tr>
-                    <th className="p-3">नाम</th>
-                    <th className="p-3">मोबाइल</th>
-                    <th className="p-3">शहर</th>
-                    <th className="p-3">रोल / योग्यता</th>
-                    <th className="p-3">अनुभव</th>
-                    <th className="p-3">सीवी</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {candidates.map((c) => (
-                    <tr key={c.id} className="border-b hover:bg-gray-50">
-                      <td className="p-3 font-bold">{c.full_name}</td>
-                      <td className="p-3">
-                        <a href={`tel:${c.phone}`} className="text-blue-600 font-bold underline">
-                          📞 {c.phone}
-                        </a>
-                      </td>
-                      <td className="p-3">{c.city}</td>
-                      <td className="p-3">{c.designation} ({c.qualification})</td>
-                      <td className="p-3">{c.experience}</td>
-                      <td className="p-3">
-                        {c.resume_url ? (
-                          <a
-                            href={c.resume_url}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="bg-green-600 text-white px-2.5 py-1 rounded text-xs font-bold"
-                          >
-                            📄 CV देखें
-                          </a>
-                        ) : (
-                          <span className="text-gray-400">उपलब्ध नहीं</span>
-                        )}
-                      </td>
+            <h2 className="text-lg font-bold mb-4">
+              {lang === 'hi' ? 'आपकी पोस्ट पर आवेदन करने वाले वर्कर (Applicants List)' : 'Applicants Who Applied to Your Jobs'}
+            </h2>
+            {candidates.length === 0 ? (
+              <p className="text-gray-500 py-8 text-center bg-gray-50 rounded-lg border">
+                {lang === 'hi' ? 'आपकी किसी भी जॉब पर अभी तक किसी वर्कर ने आवेदन नहीं किया है।' : 'No candidates have applied to your jobs yet.'}
+              </p>
+            ) : (
+              <div className="overflow-x-auto bg-white rounded-xl border shadow-sm">
+                <table className="w-full text-left text-xs md:text-sm">
+                  <thead className="bg-gray-100 border-b">
+                    <tr>
+                      <th className="p-3">{lang === 'hi' ? 'नाम' : 'Name'}</th>
+                      <th className="p-3">{lang === 'hi' ? 'मोबाइल' : 'Mobile'}</th>
+                      <th className="p-3">{lang === 'hi' ? 'जॉब शीर्षक' : 'Job Title'}</th>
+                      <th className="p-3">{lang === 'hi' ? 'आवेदन दिनांक' : 'Applied Date'}</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+                  <tbody>
+                    {candidates.map((c, index) => (
+                      <tr key={index} className="border-b hover:bg-gray-50">
+                        <td className="p-3 font-bold">{c.applicant_name}</td>
+                        <td className="p-3">
+                          <a href={`tel:${c.applicant_phone}`} className="text-blue-600 font-bold underline">
+                            📞 {c.applicant_phone}
+                          </a>
+                        </td>
+                        <td className="p-3">{c.jobs?.title || 'N/A'}</td>
+                        <td className="p-3 text-gray-500">
+                          {new Date(c.created_at).toLocaleDateString()}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </div>
         )}
 
         {/* TAB 3: Post Job Form */}
         {activeTab === 'post-job' && (
           <form onSubmit={handlePostJob} className="max-w-lg space-y-4">
-            <h2 className="text-lg font-bold mb-2">नया जॉब फॉर्म भरें (Create Job Post)</h2>
+            <h2 className="text-lg font-bold mb-2">
+              {lang === 'hi' ? 'नया जॉब फॉर्म भरें (Create Job Post)' : 'Create Job Post'}
+            </h2>
             <div>
               <label className="block text-sm font-medium text-gray-700">Job Title</label>
               <input
@@ -345,7 +371,6 @@ export default function EmployerDashboard() {
               </select>
             </div>
 
-            {/* Custom category input box when 'Other' is selected */}
             {category === 'Other' && (
               <div>
                 <label className="block text-sm font-medium text-gray-700">
@@ -366,7 +391,7 @@ export default function EmployerDashboard() {
               type="submit"
               className="w-full bg-[#ff6f00] text-white font-bold py-2.5 rounded-lg hover:bg-orange-700 transition"
             >
-              जॉब पब्लिश करें (Publish Job)
+              {lang === 'hi' ? 'जॉब पब्लिश करें (Publish Job)' : 'Publish Job'}
             </button>
           </form>
         )}
