@@ -16,8 +16,13 @@ export default function ForgotPassword() {
     setMessage('');
     setLoading(true);
 
+    // Hardcoded production URL with fallback to current origin
+    const redirectBase = typeof window !== 'undefined' && window.location.origin.includes('hirehere.in')
+      ? 'https://www.hirehere.in'
+      : (typeof window !== 'undefined' ? window.location.origin : 'https://www.hirehere.in');
+
     const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
-      redirectTo: `${window.location.origin}/employer/reset-password`,
+      redirectTo: `${redirectBase}/employer/reset-password`,
     });
 
     if (error) {
