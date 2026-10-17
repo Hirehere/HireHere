@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { supabase } from '../../../lib/supabase';
 import { useRouter } from 'next/navigation';
 
@@ -11,6 +11,22 @@ export default function ResetPasswordPage() {
   const [message, setMessage] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
   const router = useRouter();
+
+  // Handle Supabase recovery session hash on load
+  useEffect(() => {
+    const handlePasswordRecovery = async () => {
+      const hash = window.location.hash;
+      if (hash && hash.includes('access_token')) {
+        // Supabase automatically handles the hash token if initialized, 
+        // but we can also ensure the session is active.
+        const { error } = await supabase.auth.getSession();
+        if (error) {
+          setErrorMsg('रीसेट लिंक अमान्य या समाप्त हो गया है। कृपया फिर से प्रयास करें।');
+        }
+      }
+    };
+    handlePasswordRecovery();
+  }, []);
 
   const handleUpdatePassword = async (e: React.FormEvent) => {
     e.preventDefault();
