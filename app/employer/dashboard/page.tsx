@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 
 export default function EmployerDashboard() {
   const [activeTab, setActiveTab] = useState<'applicants' | 'post-job' | 'candidates'>('applicants');
-  const [lang, setLang] = useState<'hi' | 'en'>('hi'); // Language state
+  const [lang, setLang] = useState<'hi' | 'en'>('hi');
   const [user, setUser] = useState<any>(null);
   const [jobs, setJobs] = useState<any[]>([]);
   const [applications, setApplications] = useState<any[]>([]);
@@ -14,14 +14,14 @@ export default function EmployerDashboard() {
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
-  // New Job Form State
+  // New Job Form State (Synced with DB columns)
   const [jobTitle, setJobTitle] = useState('');
-  const [company, setCompany] = useState('');
-  const [location, setLocation] = useState('');
+  const [companyName, setCompanyName] = useState('');
+  const [locationCity, setLocationCity] = useState('');
   const [salary, setSalary] = useState('');
   const [category, setCategory] = useState('Driver');
   const [customCategory, setCustomCategory] = useState('');
-  const [allowDirectCall, setAllowDirectCall] = useState(true); // Allow Direct Call toggle
+  const [allowDirectCall, setAllowDirectCall] = useState(true);
 
   useEffect(() => {
     checkUser();
@@ -50,7 +50,7 @@ export default function EmployerDashboard() {
       const currentJobs = jobData || [];
       setJobs(currentJobs);
 
-      // 2. Fetch Job Applications for these specific jobs along with Job title
+      // 2. Fetch Job Applications
       const { data: appData } = await supabase
         .from('job_applications')
         .select('*, jobs(title)')
@@ -60,7 +60,7 @@ export default function EmployerDashboard() {
       const currentApps = appData || [];
       setApplications(currentApps);
 
-      // 3. Fetch Synced Candidate Profiles (Designation, Qualification, Resume) based on applicant phones
+      // 3. Fetch Synced Candidate Profiles
       if (currentApps.length > 0) {
         const applicantPhones = currentApps.map((app) => app.applicant_phone);
         
@@ -69,7 +69,6 @@ export default function EmployerDashboard() {
           .select('*')
           .in('phone', applicantPhones);
 
-        // Map application details with candidate profile info
         const enrichedCandidates = currentApps.map((app) => {
           const profile = (candidateData || []).find((c: any) => c.phone === app.applicant_phone);
           return {
@@ -107,20 +106,22 @@ export default function EmployerDashboard() {
     const { error } = await supabase.from('jobs').insert([
       {
         title: jobTitle,
-        company,
-        location_city: location,
+        company_name: companyName,
+        company: companyName, // Fallback for schema safety
+        location_city: locationCity,
         salary,
         category: finalCategory,
         employer_id: user.id,
-        allow_direct_call: allowDirectCall, // Direct call flag saved to database
+        allow_direct_call: allowDirectCall,
+        is_verified: true,
       },
     ]);
 
     if (!error) {
       alert(lang === 'hi' ? 'जॉब सफलतापूर्वक पोस्ट हो गई!' : 'Job Posted Successfully!');
       setJobTitle('');
-      setCompany('');
-      setLocation('');
+      setCompanyName('');
+      setLocationCity('');
       setSalary('');
       setCategory('Driver');
       setCustomCategory('');
@@ -154,7 +155,6 @@ export default function EmployerDashboard() {
           </div>
 
           <div className="flex items-center gap-3">
-            {/* Language Switch Button */}
             <button
               onClick={() => setLang(lang === 'hi' ? 'en' : 'hi')}
               className="bg-gray-200 text-gray-800 px-3 py-2 rounded-lg text-sm font-bold hover:bg-gray-300 transition cursor-pointer"
@@ -272,7 +272,7 @@ export default function EmployerDashboard() {
           </div>
         )}
 
-        {/* TAB 2: Candidates who applied to employer's jobs with full synced profile */}
+        {/* TAB 2: Candidates Full Profiles */}
         {activeTab === 'candidates' && (
           <div>
             <h2 className="text-lg font-bold mb-4">
@@ -339,54 +339,55 @@ export default function EmployerDashboard() {
               {lang === 'hi' ? 'नया जॉब फॉर्म भरें (Create Job Post)' : 'Create Job Post'}
             </h2>
             <div>
-              <label className="block text-sm font-medium text-gray-700">Job Title</label>
+              <label className="block text-sm font-medium text-gray-700">Job Title *</label>
               <input
                 type="text"
                 required
                 value={jobTitle}
                 onChange={(e) => setJobTitle(e.target.value)}
                 placeholder="e.g. Store Executive, Driver"
-                className="w-full border rounded p-2 mt-1 focus:ring-2 focus:ring-blue-500 outline-none"
+                className="w-full border rounded p-2 mt-1 focus:ring-2 focus:ring-blue-500 outline-none text-gray-800"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700">Company Name</label>
+              <label className="block text-sm font-medium text-gray-700">Company Name *</label>
               <input
                 type="text"
                 required
-                value={company}
-                onChange={(e) => setCompany(e.target.value)}
-                className="w-full border rounded p-2 mt-1 focus:ring-2 focus:ring-blue-500 outline-none"
+                value={companyName}
+                onChange={(e) => setCompanyName(e.target.value)}
+                placeholder="e.g. Maswer Automotive"
+                className="w-full border rounded p-2 mt-1 focus:ring-2 focus:ring-blue-500 outline-none text-gray-800"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700">Location / City</label>
+              <label className="block text-sm font-medium text-gray-700">Location / City *</label>
               <input
                 type="text"
                 required
-                value={location}
-                onChange={(e) => setLocation(e.target.value)}
+                value={locationCity}
+                onChange={(e) => setLocationCity(e.target.value)}
                 placeholder="e.g. Chakan, Pune"
-                className="w-full border rounded p-2 mt-1 focus:ring-2 focus:ring-blue-500 outline-none"
+                className="w-full border rounded p-2 mt-1 focus:ring-2 focus:ring-blue-500 outline-none text-gray-800"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700">Monthly Salary</label>
+              <label className="block text-sm font-medium text-gray-700">Monthly Salary *</label>
               <input
                 type="text"
                 required
                 value={salary}
                 onChange={(e) => setSalary(e.target.value)}
                 placeholder="e.g. ₹15,000 - ₹20,000"
-                className="w-full border rounded p-2 mt-1 focus:ring-2 focus:ring-blue-500 outline-none"
+                className="w-full border rounded p-2 mt-1 focus:ring-2 focus:ring-blue-500 outline-none text-gray-800"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700">Category</label>
+              <label className="block text-sm font-medium text-gray-700">Category *</label>
               <select
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
-                className="w-full border rounded p-2 mt-1 focus:ring-2 focus:ring-blue-500 outline-none"
+                className="w-full border rounded p-2 mt-1 focus:ring-2 focus:ring-blue-500 outline-none bg-white text-gray-800"
               >
                 <option value="Driver">Driver</option>
                 <option value="Delivery">Delivery</option>
@@ -412,12 +413,11 @@ export default function EmployerDashboard() {
                   value={customCategory}
                   onChange={(e) => setCustomCategory(e.target.value)}
                   placeholder="e.g. Accountant, Cook, Helper"
-                  className="w-full border rounded p-2 mt-1 focus:ring-2 focus:ring-blue-500 outline-none"
+                  className="w-full border rounded p-2 mt-1 focus:ring-2 focus:ring-blue-500 outline-none text-gray-800"
                 />
               </div>
             )}
 
-            {/* Direct Call & WhatsApp Checkbox Toggle */}
             <div className="flex items-center gap-2 pt-2">
               <input
                 type="checkbox"
