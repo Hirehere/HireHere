@@ -50,26 +50,38 @@ export default function EmployerDashboard() {
       const currentJobs = jobData || [];
       setJobs(currentJobs);
 
-      // 2. Fetch Job Applications for these specific jobs
+      // 2. Fetch Job Applications for these specific jobs along with Job title
       const { data: appData } = await supabase
         .from('job_applications')
         .select('*, jobs(title)')
-        .eq('employer_id', employerId);
+        .eq('employer_id', employerId)
+        .order('created_at', { ascending: false });
 
       const currentApps = appData || [];
       setApplications(currentApps);
 
-      // 3. Filter Candidates who applied ONLY to this employer's jobs
-      if (currentJobs.length > 0) {
-        const jobIds = currentJobs.map((j) => j.id);
+      // 3. Fetch Synced Candidate Profiles (Designation, Qualification, Resume) based on applicant phones
+      if (currentApps.length > 0) {
+        const applicantPhones = currentApps.map((app) => app.applicant_phone);
         
         const { data: candidateData } = await supabase
-          .from('job_applications')
-          .select('applicant_name, applicant_phone, created_at, jobs(title, location_city)')
-          .in('job_id', jobIds)
-          .order('created_at', { ascending: false });
+          .from('candidates')
+          .select('*')
+          .in('phone', applicantPhones);
 
-        setCandidates(candidateData || []);
+        // Map application details with candidate profile info
+        const enrichedCandidates = currentApps.map((app) => {
+          const profile = (candidateData || []).find((c: any) => c.phone === app.applicant_phone);
+          return {
+            ...app,
+            designation: profile?.designation || 'N/A',
+            qualification: profile?.qualification || 'N/A',
+            experience: profile?.experience || 'N/A',
+            resume_url: app.resume_url || profile?.resume_url || '',
+          };
+        });
+
+        setCandidates(enrichedCandidates);
       } else {
         setCandidates([]);
       }
@@ -145,7 +157,7 @@ export default function EmployerDashboard() {
             {/* Language Switch Button */}
             <button
               onClick={() => setLang(lang === 'hi' ? 'en' : 'hi')}
-              className="bg-gray-200 text-gray-800 px-3 py-2 rounded-lg text-sm font-bold hover:bg-gray-300 transition"
+              className="bg-gray-200 text-gray-800 px-3 py-2 rounded-lg text-sm font-bold hover:bg-gray-300 transition cursor-pointer"
             >
               🌐 {lang === 'hi' ? 'English' : 'हिंदी'}
             </button>
@@ -155,7 +167,7 @@ export default function EmployerDashboard() {
                 await supabase.auth.signOut();
                 router.push('/employer/login');
               }}
-              className="bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-red-700"
+              className="bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-red-700 cursor-pointer"
             >
               {lang === 'hi' ? 'लॉगआउट (Logout)' : 'Logout'}
             </button>
@@ -166,7 +178,7 @@ export default function EmployerDashboard() {
         <div className="flex gap-2 md:gap-4 border-b mb-6 overflow-x-auto">
           <button
             onClick={() => setActiveTab('applicants')}
-            className={`pb-2 px-4 font-bold whitespace-nowrap ${
+            className={`pb-2 px-4 font-bold whitespace-nowrap cursor-pointer ${
               activeTab === 'applicants'
                 ? 'border-b-2 border-blue-600 text-blue-600'
                 : 'text-gray-500'
@@ -176,7 +188,7 @@ export default function EmployerDashboard() {
           </button>
           <button
             onClick={() => setActiveTab('candidates')}
-            className={`pb-2 px-4 font-bold whitespace-nowrap ${
+            className={`pb-2 px-4 font-bold whitespace-nowrap cursor-pointer ${
               activeTab === 'candidates'
                 ? 'border-b-2 border-blue-600 text-blue-600'
                 : 'text-gray-500'
@@ -186,7 +198,7 @@ export default function EmployerDashboard() {
           </button>
           <button
             onClick={() => setActiveTab('post-job')}
-            className={`pb-2 px-4 font-bold whitespace-nowrap ${
+            className={`pb-2 px-4 font-bold whitespace-nowrap cursor-pointer ${
               activeTab === 'post-job'
                 ? 'border-b-2 border-blue-600 text-blue-600'
                 : 'text-gray-500'
@@ -260,11 +272,11 @@ export default function EmployerDashboard() {
           </div>
         )}
 
-        {/* TAB 2: Candidates who applied to employer's jobs */}
+        {/* TAB 2: Candidates who applied to employer's jobs with full synced profile */}
         {activeTab === 'candidates' && (
           <div>
             <h2 className="text-lg font-bold mb-4">
-              {lang === 'hi' ? 'आपकी पोस्ट पर आवेदन करने वाले वर्कर (Applicants List)' : 'Applicants Who Applied to Your Jobs'}
+              {lang === 'hi' ? 'आवेदकों की योग्यता एवं रिज्यूम (Applicants Full Profiles)' : 'Applicants Full Profiles & CV'}
             </h2>
             {candidates.length === 0 ? (
               <p className="text-gray-500 py-8 text-center bg-gray-50 rounded-lg border">
@@ -278,7 +290,10 @@ export default function EmployerDashboard() {
                       <th className="p-3">{lang === 'hi' ? 'नाम' : 'Name'}</th>
                       <th className="p-3">{lang === 'hi' ? 'मोबाइल' : 'Mobile'}</th>
                       <th className="p-3">{lang === 'hi' ? 'जॉब शीर्षक' : 'Job Title'}</th>
-                      <th className="p-3">{lang === 'hi' ? 'आवेदन दिनांक' : 'Applied Date'}</th>
+                      <th className="p-3">{lang === 'hi' ? 'पद / रोल (Designation)' : 'Designation'}</th>
+                      <th className="p-3">{lang === 'hi' ? 'योग्यता / डिग्री' : 'Qualification'}</th>
+                      <th className="p-3">{lang === 'hi' ? 'अनुभव' : 'Experience'}</th>
+                      <th className="p-3">{lang === 'hi' ? 'रिज्यूम' : 'Resume'}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -290,9 +305,23 @@ export default function EmployerDashboard() {
                             📞 {c.applicant_phone}
                           </a>
                         </td>
-                        <td className="p-3">{c.jobs?.title || 'N/A'}</td>
-                        <td className="p-3 text-gray-500">
-                          {new Date(c.created_at).toLocaleDateString()}
+                        <td className="p-3 font-medium text-blue-900">{c.jobs?.title || 'N/A'}</td>
+                        <td className="p-3 font-semibold text-gray-700">{c.designation}</td>
+                        <td className="p-3">{c.qualification}</td>
+                        <td className="p-3">{c.experience}</td>
+                        <td className="p-3">
+                          {c.resume_url ? (
+                            <a
+                              href={c.resume_url}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="bg-green-600 text-white px-2.5 py-1 rounded text-xs font-bold inline-block"
+                            >
+                              📄 CV देखें
+                            </a>
+                          ) : (
+                            <span className="text-gray-400">उपलब्ध नहीं</span>
+                          )}
                         </td>
                       </tr>
                     ))}
@@ -406,7 +435,7 @@ export default function EmployerDashboard() {
 
             <button
               type="submit"
-              className="w-full bg-[#ff6f00] text-white font-bold py-2.5 rounded-lg hover:bg-orange-700 transition"
+              className="w-full bg-[#ff6f00] text-white font-bold py-2.5 rounded-lg hover:bg-orange-700 transition cursor-pointer"
             >
               {lang === 'hi' ? 'जॉब पब्लिश करें (Publish Job)' : 'Publish Job'}
             </button>
