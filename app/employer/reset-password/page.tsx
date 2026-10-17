@@ -10,22 +10,33 @@ export default function ResetPasswordPage() {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
+  const [isSessionValid, setIsSessionValid] = useState(false);
   const router = useRouter();
 
-  // Handle Supabase recovery session hash on load
   useEffect(() => {
-    const handlePasswordRecovery = async () => {
-      const hash = window.location.hash;
-      if (hash && hash.includes('access_token')) {
-        // Supabase automatically handles the hash token if initialized, 
-        // but we can also ensure the session is active.
-        const { error } = await supabase.auth.getSession();
-        if (error) {
-          setErrorMsg('रीसेट लिंक अमान्य या समाप्त हो गया है। कृपया फिर से प्रयास करें।');
-        }
+    // 1. Listen for Supabase Auth state changes (specifically PASSWORD_RECOVERY)
+    const { data: authListener } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (event === 'PASSWORD_RECOVERY' || session) {
+        setIsSessionValid(true);
+        setErrorMsg('');
+      }
+    });
+
+    // 2. Check existing session / recovery hash
+    const checkSession = async () => {
+      const { data: { session }, error } = await supabase.auth.getSession();
+      if (session) {
+        setIsSessionValid(true);
+      } else if (window.location.hash.includes('error')) {
+        setErrorMsg('रीसेट लिंक अमान्य या समाप्त हो गया है। कृपया नया लिंक मंगाएं।');
       }
     };
-    handlePasswordRecovery();
+
+    checkSession();
+
+    return () => {
+      authListener?.subscription.unsubscribe();
+    };
   }, []);
 
   const handleUpdatePassword = async (e: React.FormEvent) => {
