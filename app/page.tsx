@@ -291,7 +291,7 @@ export default function JobPortal() {
           </button>
         </div>
         <p className="text-xs md:text-sm text-gray-600 mt-2 font-bold">
-          🎥 Direct Call & WhatsApp hiring for local workers (क्लिक करके आवाज़ सुनें)
+          
         </p>
       </section>
 
