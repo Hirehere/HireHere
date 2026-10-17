@@ -40,7 +40,7 @@ const TRANSLATIONS = {
     noJobsSub: 'नया जॉब लिस्ट करने के लिए ऊपर एप्लॉयडर ज़ोन में जाएं।',
     verifiedBadge: '✅ वेरिफाइड कंपनी',
     monthSalary: '/महीना',
-    applyCallBtn: '📞 कॉल करें / अप्लाई करें',
+    applyCallBtn: '📞 Apply / Direct Call',
     navHome: 'होम',
     navJobs: 'नौकरियां',
     navEmployer: 'एप्लॉयडर',
@@ -164,6 +164,47 @@ export default function JobPortal() {
     setSearchCategory(category === 'all' ? '' : category);
   };
 
+  // FIXED Handler for Mandatory Apply First -> Then Direct Call / WhatsApp
+  const handleApplyAndCall = async (job: any) => {
+    const candidateName = prompt(lang === 'hi' ? 'अपना पूरा नाम दर्ज करें:' : 'Enter your full name:');
+    if (!candidateName) return;
+
+    const candidatePhone = prompt(lang === 'hi' ? 'अपना 10 अंकों का मोबाइल नंबर दर्ज करें:' : 'Enter your 10-digit mobile number:');
+    if (!candidatePhone || candidatePhone.trim().length < 10) {
+      alert(lang === 'hi' ? 'कृपया सही मोबाइल नंबर दर्ज करें।' : 'Please enter a valid mobile number.');
+      return;
+    }
+
+    // 1. Save application to Supabase first
+    const { error } = await supabase.from('job_applications').insert([
+      {
+        job_id: job.id,
+        employer_id: job.employer_id,
+        applicant_name: candidateName.trim(),
+        applicant_phone: candidatePhone.trim(),
+      },
+    ]);
+
+    if (error) {
+      alert((lang === 'hi' ? 'आवेदन करने में त्रुटि: ' : 'Error applying: ') + error.message);
+      return;
+    }
+
+    // 2. Alert Candidate ONLY after application is saved in DB
+    alert(lang === 'hi' ? '🎉 आपका आवेदन सफलतापूर्वक भेज दिया गया है!' : '🎉 Application submitted successfully!');
+
+    // 3. Trigger Direct Call / WhatsApp ONLY if employer enabled 'allow_direct_call'
+    if (job.allow_direct_call !== false) {
+      const callNow = confirm(lang === 'hi' ? 'क्या आप HR को सीधा कॉल करना चाहते हैं?' : 'Do you want to call the HR directly?');
+      if (callNow) {
+        const hrNumber = job.hr_call_number || job.hr_phone || job.employer_phone || job.phone;
+        if (hrNumber) {
+          window.location.href = `tel:${hrNumber}`;
+        }
+      }
+    }
+  };
+
   return (
     <div className="w-full min-h-screen bg-[#f8fafc] font-sans pb-20 text-[#1a1a1a]">
       {/* ===== HEADER ===== */}
@@ -190,7 +231,6 @@ export default function JobPortal() {
               </select>
             </div>
 
-            {/* Combined Employer Link in Header */}
             <Link
               href="/employer/login"
               className="bg-[#ff6f00] hover:bg-[#e65100] text-white font-extrabold text-xs md:text-sm px-3 py-2 rounded-lg transition shadow-sm"
@@ -227,7 +267,6 @@ export default function JobPortal() {
               <span>{t.wantJob}</span>
             </Link>
 
-            {/* Combined Employer Link in Hero CTA */}
             <Link
               href="/employer/login"
               className="bg-white text-[#0d47a1] p-4 rounded-xl font-extrabold text-sm md:text-base flex flex-col sm:flex-row items-center justify-center gap-2 shadow-lg active:scale-95 transition hover:bg-gray-50"
@@ -262,7 +301,7 @@ export default function JobPortal() {
         </div>
       </section>
 
-    {/* ===== 10-SECOND SHORT VIDEO SECTION WITH AUDIO TOGGLE ===== */}
+      {/* ===== 10-SECOND SHORT VIDEO SECTION WITH AUDIO TOGGLE ===== */}
       <section className="w-full px-6 py-4 flex flex-col items-center justify-center">
         <div className="relative w-full max-w-[240px] rounded-xl overflow-hidden shadow-md border-2 border-white bg-black group">
           <video
@@ -275,7 +314,6 @@ export default function JobPortal() {
             className="w-full h-auto object-cover max-h-[320px]"
           />
           
-          {/* Audio Control Button */}
           <button
             type="button"
             onClick={(e) => {
@@ -382,26 +420,27 @@ export default function JobPortal() {
                   </div>
 
                   <div className="text-sm text-gray-600 mb-2">
-                    🏢 <strong className="text-gray-800">{job.company_name}</strong>
+                    🏢 <strong className="text-gray-800">{job.company || job.company_name}</strong>
                   </div>
 
                   <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-gray-600 mb-4">
                     <span className="font-extrabold text-[#2e7d32]">
-                      💰 ₹{job.min_salary?.toLocaleString() || 0} - ₹{job.max_salary?.toLocaleString() || 0} {t.monthSalary}
+                      💰 {job.salary || `₹${job.min_salary || 0} - ₹${job.max_salary || 0}`} {t.monthSalary}
                     </span>
                     <span>📍 {job.location_city}</span>
                   </div>
                 </div>
 
                 <div className="flex gap-3 pt-3 border-t border-gray-100 mt-2">
-                  <a
-                    href={`tel:${job.hr_call_number}`}
-                    className="flex-1 bg-[#0d47a1] hover:bg-[#1976d2] text-white text-center py-2.5 rounded-xl text-xs md:text-sm font-black transition shadow-sm"
+                  <button
+                    type="button"
+                    onClick={() => handleApplyAndCall(job)}
+                    className="flex-1 bg-[#0d47a1] hover:bg-[#1976d2] text-white text-center py-2.5 rounded-xl text-xs md:text-sm font-black transition shadow-sm cursor-pointer"
                   >
                     {t.applyCallBtn}
-                  </a>
+                  </button>
                   <a
-                    href={`https://wa.me/${job.hr_whatsapp_number}?text=Hi,%20I%20am%20interested%20in%20the%20${encodeURIComponent(job.title)}%20job%20posted%20on%20HireHere.in`}
+                    href={`https://wa.me/${job.hr_whatsapp_number || job.hr_call_number || job.hr_phone || job.employer_phone}?text=Hi,%20I%20am%20interested%20in%20the%20${encodeURIComponent(job.title)}%20job%20posted%20on%20HireHere.in`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="w-12 bg-[#25D366] hover:bg-green-600 text-white flex items-center justify-center rounded-xl text-xl transition shadow-sm"

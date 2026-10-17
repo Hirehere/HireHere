@@ -21,6 +21,7 @@ export default function EmployerDashboard() {
   const [salary, setSalary] = useState('');
   const [category, setCategory] = useState('Driver');
   const [customCategory, setCustomCategory] = useState('');
+  const [allowDirectCall, setAllowDirectCall] = useState(true); // Allow Direct Call toggle
 
   useEffect(() => {
     checkUser();
@@ -59,11 +60,9 @@ export default function EmployerDashboard() {
       setApplications(currentApps);
 
       // 3. Filter Candidates who applied ONLY to this employer's jobs
-      // Extract unique applicant phones or emails from applications
       if (currentJobs.length > 0) {
         const jobIds = currentJobs.map((j) => j.id);
         
-        // Fetch candidates matching job applications for this employer's jobs
         const { data: candidateData } = await supabase
           .from('job_applications')
           .select('applicant_name, applicant_phone, created_at, jobs(title, location_city)')
@@ -101,6 +100,7 @@ export default function EmployerDashboard() {
         salary,
         category: finalCategory,
         employer_id: user.id,
+        allow_direct_call: allowDirectCall, // Direct call flag saved to database
       },
     ]);
 
@@ -112,6 +112,7 @@ export default function EmployerDashboard() {
       setSalary('');
       setCategory('Driver');
       setCustomCategory('');
+      setAllowDirectCall(true);
       setActiveTab('applicants');
       fetchEmployerData(user.id);
     } else {
@@ -386,6 +387,22 @@ export default function EmployerDashboard() {
                 />
               </div>
             )}
+
+            {/* Direct Call & WhatsApp Checkbox Toggle */}
+            <div className="flex items-center gap-2 pt-2">
+              <input
+                type="checkbox"
+                id="allowDirectCall"
+                checked={allowDirectCall}
+                onChange={(e) => setAllowDirectCall(e.target.checked)}
+                className="w-4 h-4 text-blue-600 rounded cursor-pointer"
+              />
+              <label htmlFor="allowDirectCall" className="text-sm font-medium text-gray-700 cursor-pointer">
+                {lang === 'hi' 
+                  ? 'अप्लाई करने के बाद कैंडिडेट को डायरेक्ट कॉल/व्हाट्सएप बटन दिखाएं' 
+                  : 'Allow candidates to call/WhatsApp directly after applying'}
+              </label>
+            </div>
 
             <button
               type="submit"
