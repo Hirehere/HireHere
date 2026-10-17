@@ -6,9 +6,9 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
 export default function ForgotPassword() {
-  const [step, setStep] = useState(1); // Step 1: Verify details, Step 2: Update password
+  const [step, setStep] = useState(1); // 1: Verify details, 2: Reset password
   const [email, setEmail] = useState('');
-  const [fullName, setFullName] = useState('');
+  const [firstName, setFirstName] = useState('');
   const [phone, setPhone] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -18,7 +18,6 @@ export default function ForgotPassword() {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
-  // 1. Verify Name, Email & Phone against 'employers' table
   const handleVerifyDetails = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg('');
@@ -26,9 +25,10 @@ export default function ForgotPassword() {
 
     const cleanEmail = email.trim().toLowerCase();
     const cleanPhone = phone.trim().replace(/\D/g, '');
-    const cleanName = fullName.trim();
+    const cleanFirstName = firstName.trim().toLowerCase();
 
     try {
+      // Fetching employer row by email
       const { data: employer, error } = await supabase
         .from('employers')
         .select('*')
@@ -41,16 +41,18 @@ export default function ForgotPassword() {
         return;
       }
 
-      const dbName = String(employer.full_name || employer.name || '').trim().toLowerCase();
+      // Extracting name from database (checking full_name, name, or first name)
+      const dbFullName = String(employer.full_name || employer.name || '').trim();
+      const dbFirstWord = dbFullName.split(' ')[0].toLowerCase();
       const dbPhone = String(employer.phone || '').trim().replace(/\D/g, '');
 
-      if (dbName !== cleanName.toLowerCase() || dbPhone !== cleanPhone) {
-        setErrorMsg('Darj kiya gaya naam ya mobile number is email ID se match nahi kar raha hai.');
+      // Check if first name matches the beginning of the stored name
+      if (dbFirstWord !== cleanFirstName || dbPhone !== cleanPhone) {
+        setErrorMsg('Darj kiya gaya pehla naam ya mobile number is email ID se match nahi kar raha hai.');
         setLoading(false);
         return;
       }
 
-      // Details matched successfully, move to password update step
       setStep(2);
       setSuccessMsg('Pahchan safaltapoorvak verify ho gayi hai! Ab naya password set karein.');
     } catch (err: any) {
@@ -60,7 +62,6 @@ export default function ForgotPassword() {
     }
   };
 
-  // 2. Update Password directly using Supabase Auth
   const handleUpdatePassword = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg('');
@@ -79,8 +80,6 @@ export default function ForgotPassword() {
     setLoading(true);
 
     try {
-      // Note: To update user password directly, we can use supabase auth updateUser 
-      // or custom backend action if needed. Let's update password for the current auth user context.
       const { error } = await supabase.auth.updateUser({
         password: newPassword,
       });
@@ -109,7 +108,7 @@ export default function ForgotPassword() {
           </h1>
           <p className="text-gray-500 text-sm mt-1">
             {step === 1 
-              ? 'Apna naam, registered email aur mobile number darj karein.' 
+              ? 'Apna pehla naam, registered email aur mobile number darj karein.' 
               : 'Apne khate ke liye naya password darj karein.'}
           </p>
         </div>
@@ -130,14 +129,14 @@ export default function ForgotPassword() {
           <form onSubmit={handleVerifyDetails} className="space-y-4">
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-1">
-                Pura Naam (Full Name)
+                Pehla Naam (First Name)
               </label>
               <input
                 type="text"
                 required
-                value={fullName}
-                onChange={(e) => setFullName(e.target.value)}
-                placeholder="Jaise: Sujit Shinde"
+                value={firstName}
+                onChange={(e) => setFirstName(e.target.value)}
+                placeholder="Jaise: Suraj"
                 className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-gray-800"
               />
             </div>
