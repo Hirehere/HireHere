@@ -262,10 +262,11 @@ export default function JobPortal() {
         </div>
       </section>
 
-      {/* ===== 10-SECOND SHORT VIDEO SECTION ===== */}
+      {/* ===== 10-SECOND SHORT VIDEO SECTION WITH AUDIO TOGGLE ===== */}
       <section className="w-full px-6 py-8 flex flex-col items-center justify-center">
-        <div className="w-full max-w-md rounded-2xl overflow-hidden shadow-xl border-4 border-white bg-black">
+        <div className="relative w-full max-w-md rounded-2xl overflow-hidden shadow-xl border-4 border-white bg-black group">
           <video
+            id="heroVideo"
             src="/hero-video.mp4"
             autoPlay
             loop
@@ -273,9 +274,24 @@ export default function JobPortal() {
             playsInline
             className="w-full h-auto object-cover"
           />
+          
+          {/* Audio Control Button */}
+          <button
+            type="button"
+            onClick={(e) => {
+              const video = document.getElementById('heroVideo') as HTMLVideoElement;
+              if (video) {
+                video.muted = !video.muted;
+                e.currentTarget.innerText = video.muted ? '🔇 Unmute' : '🔊 Mute';
+              }
+            }}
+            className="absolute bottom-3 right-3 bg-black/70 hover:bg-black text-white text-xs font-bold px-3 py-1.5 rounded-full backdrop-blur-sm transition border border-white/30 cursor-pointer"
+          >
+            🔇 Unmute
+          </button>
         </div>
         <p className="text-xs md:text-sm text-gray-600 mt-2 font-bold">
-          🎥 Direct Call & WhatsApp hiring for local workers
+          🎥 Direct Call & WhatsApp hiring for local workers (क्लिक करके आवाज़ सुनें)
         </p>
       </section>
 
