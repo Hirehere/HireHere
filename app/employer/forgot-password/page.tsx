@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState } from 'react';
@@ -18,7 +17,7 @@ export default function ForgotPassword() {
     setLoading(true);
 
     const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
-      redirectTo: `${window.location.origin}/employer/login`,
+      redirectTo: `${window.location.origin}/employer/reset-password`,
     });
 
     if (error) {
@@ -76,7 +75,7 @@ export default function ForgotPassword() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-blue-700 hover:bg-blue-800 text-white font-bold py-2.5 rounded-lg shadow transition disabled:opacity-50"
+            className="w-full bg-blue-700 hover:bg-blue-800 text-white font-bold py-2.5 rounded-lg shadow transition disabled:opacity-50 cursor-pointer"
           >
             {loading ? 'भेजा जा रहा है...' : 'पासवर्ड रीसेट लिंक भेजें'}
           </button>
@@ -91,4 +90,4 @@ export default function ForgotPassword() {
       </div>
     </div>
   );
-} y
+}
