@@ -19,6 +19,7 @@ export default function EmployerDashboard() {
   const [location, setLocation] = useState('');
   const [salary, setSalary] = useState('');
   const [category, setCategory] = useState('Driver');
+  const [customCategory, setCustomCategory] = useState('');
 
   useEffect(() => {
     checkUser();
@@ -72,13 +73,21 @@ export default function EmployerDashboard() {
     e.preventDefault();
     if (!user) return;
 
+    // Determine category: custom value if 'Other' selected, else standard option
+    const finalCategory = category === 'Other' ? customCategory.trim() : category;
+
+    if (!finalCategory) {
+      alert('Kripya category darj karein.');
+      return;
+    }
+
     const { error } = await supabase.from('jobs').insert([
       {
         title: jobTitle,
         company,
         location_city: location,
         salary,
-        category,
+        category: finalCategory,
         employer_id: user.id,
       },
     ]);
@@ -89,6 +98,8 @@ export default function EmployerDashboard() {
       setCompany('');
       setLocation('');
       setSalary('');
+      setCategory('Driver');
+      setCustomCategory('');
       setActiveTab('applicants'); // Switch back to applicants tab
       fetchEmployerData(user.id);
     } else {
@@ -208,7 +219,7 @@ export default function EmployerDashboard() {
                   {jobs.map((job) => (
                     <div key={job.id} className="bg-gray-50 p-4 rounded-lg border text-sm">
                       <h4 className="font-bold text-[#0d47a1]">{job.title}</h4>
-                      <p className="text-xs text-gray-500 mt-1">📍 {job.location_city} | 💰 {job.salary}</p>
+                      <p className="text-xs text-gray-500 mt-1">📍 {job.location_city} | 💰 {job.salary} | 🏷️ {job.category}</p>
                     </div>
                   ))}
                 </div>
@@ -279,7 +290,7 @@ export default function EmployerDashboard() {
                 value={jobTitle}
                 onChange={(e) => setJobTitle(e.target.value)}
                 placeholder="e.g. Store Executive, Driver"
-                className="w-full border rounded p-2 mt-1"
+                className="w-full border rounded p-2 mt-1 focus:ring-2 focus:ring-blue-500 outline-none"
               />
             </div>
             <div>
@@ -289,7 +300,7 @@ export default function EmployerDashboard() {
                 required
                 value={company}
                 onChange={(e) => setCompany(e.target.value)}
-                className="w-full border rounded p-2 mt-1"
+                className="w-full border rounded p-2 mt-1 focus:ring-2 focus:ring-blue-500 outline-none"
               />
             </div>
             <div>
@@ -300,7 +311,7 @@ export default function EmployerDashboard() {
                 value={location}
                 onChange={(e) => setLocation(e.target.value)}
                 placeholder="e.g. Chakan, Pune"
-                className="w-full border rounded p-2 mt-1"
+                className="w-full border rounded p-2 mt-1 focus:ring-2 focus:ring-blue-500 outline-none"
               />
             </div>
             <div>
@@ -311,7 +322,7 @@ export default function EmployerDashboard() {
                 value={salary}
                 onChange={(e) => setSalary(e.target.value)}
                 placeholder="e.g. ₹15,000 - ₹20,000"
-                className="w-full border rounded p-2 mt-1"
+                className="w-full border rounded p-2 mt-1 focus:ring-2 focus:ring-blue-500 outline-none"
               />
             </div>
             <div>
@@ -319,7 +330,7 @@ export default function EmployerDashboard() {
               <select
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
-                className="w-full border rounded p-2 mt-1"
+                className="w-full border rounded p-2 mt-1 focus:ring-2 focus:ring-blue-500 outline-none"
               >
                 <option value="Driver">Driver</option>
                 <option value="Delivery">Delivery</option>
@@ -327,8 +338,30 @@ export default function EmployerDashboard() {
                 <option value="Quality Inspector">Quality Inspector</option>
                 <option value="Electrician">Electrician</option>
                 <option value="Housekeeping">Housekeeping</option>
+                <option value="Store Executive">Store Executive</option>
+                <option value="Welder">Welder</option>
+                <option value="Operator">Machine Operator</option>
+                <option value="Other">Other (अन्य)</option>
               </select>
             </div>
+
+            {/* Custom category input box when 'Other' is selected */}
+            {category === 'Other' && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  अपनी कैटेगिरी लिखें (Specify Category) *
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={customCategory}
+                  onChange={(e) => setCustomCategory(e.target.value)}
+                  placeholder="e.g. Accountant, Cook, Helper"
+                  className="w-full border rounded p-2 mt-1 focus:ring-2 focus:ring-blue-500 outline-none"
+                />
+              </div>
+            )}
+
             <button
               type="submit"
               className="w-full bg-[#ff6f00] text-white font-bold py-2.5 rounded-lg hover:bg-orange-700 transition"
