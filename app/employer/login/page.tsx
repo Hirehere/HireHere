@@ -145,9 +145,16 @@ export default function EmployerAuth() {
 
           {/* Password Field */}
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-1">
-              पासवर्ड (Password)
-            </label>
+            <div className="flex justify-between items-center mb-1">
+              <label className="text-sm font-semibold text-gray-700">
+                पासवर्ड (Password)
+              </label>
+              {!isRegister && (
+                <Link href="/employer/forgot-password" className="text-xs text-blue-600 hover:underline">
+                  पासवर्ड भूल गए?
+                </Link>
+              )}
+            </div>
             <input
               type="password"
               required
