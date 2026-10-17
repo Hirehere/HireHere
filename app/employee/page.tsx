@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { createClient } from "@supabase/supabase-js";
 import Link from "next/link";
+import { useRouter } from "next/navigation"; // Added router for redirection
 
 // Safe Supabase Client Initialization (Prevents Prerender Build Errors)
 const supabaseUrl =
@@ -292,6 +293,7 @@ const TRANSLATIONS: Record<"hi" | "en", TranslationType> = {
 export default function EmployeeRegister() {
   const [lang, setLang] = useState<"hi" | "en">("hi");
   const [loading, setLoading] = useState(false);
+  const router = useRouter(); // Initialize router for redirection
 
   // Read saved language preference from localStorage
   useEffect(() => {
@@ -377,7 +379,7 @@ export default function EmployeeRegister() {
         return;
       }
 
-      // Resume upload
+      // Resume upload (Optional)
       let resumeUrl = "";
       if (resumeFile) {
         const fileExt = resumeFile.name.split(".").pop();
@@ -402,7 +404,7 @@ export default function EmployeeRegister() {
       // Final qualification string with specialization if Graduate or Post Graduate
       let finalQualification = formData.qualification;
       if ((formData.qualification === "Graduate" || formData.qualification === "Post Graduate") && specialization.trim()) {
-        finalQualification = `${formData.qualification} - ${specialization.trim()}`;
+        finalQualification = `${formData.qualification} (${specialization.trim()})`;
       }
 
       // Insert record
@@ -425,24 +427,9 @@ export default function EmployeeRegister() {
 
       alert(t.successMsg);
       
-      // Reset form
-      const resetCatKeys = Object.keys(t.categories);
-      const resetCat = resetCatKeys[0] || "";
-      setSelectedCategory(resetCat);
-      setCustomDesignation("");
-      setSpecialization("");
-      setFormData({
-        name: "",
-        phone: "",
-        city: t.cities[0],
-        job_category: resetCat,
-        designation: t.categories[resetCat]?.[0] || "",
-        qualification: t.qualifications[1]?.value || "10th Pass",
-        experience: t.experiences[1]?.value || "0 - 1 Year",
-        notice_period: t.noticePeriods[0]?.value || "Immediate",
-        expected_salary: "",
-      });
-      setResumeFile(null);
+      // Redirect to homepage after successful registration
+      router.push("/");
+
     } catch (err: unknown) {
       const errorObj = err as { message?: string };
       const errStr = JSON.stringify(err) + (errorObj?.message || "");
@@ -454,7 +441,7 @@ export default function EmployeeRegister() {
       ) {
         alert(t.alreadyRegisteredErr);
       } else {
-        alert("Error: " + (errorObj?.message || "An error occurred."));
+        alert("Registration failed: " + (errorObj?.message || "An unexpected error occurred. Please try again."));
       }
     } finally {
       setLoading(false);
@@ -698,7 +685,7 @@ export default function EmployeeRegister() {
               />
             </div>
 
-            {/* Resume Upload */}
+            {/* Resume Upload (Optional) */}
             <div className="bg-slate-50 p-4 rounded-xl border border-dashed border-slate-300">
               <label className="block text-sm font-semibold text-slate-700 mb-1">
                 {t.attachResume}
