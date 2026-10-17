@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { createClient } from '@supabase/supabase-js';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -10,7 +10,6 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://tumyhkuybin
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'sb_publishable_HDaKMDhyr6HkCXEVYX8apg_s2cdR9hg';
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
-// Professional Translation Dictionary with updated Hero texts
 const TRANSLATIONS = {
   hi: {
     workerRegister: '👤 वर्कर रजिस्ट्रेशन',
@@ -46,8 +45,10 @@ const TRANSLATIONS = {
     navJobs: 'नौकरियां',
     navEmployer: 'एप्लॉयडर',
     quote: '"हर मेहनती नागरिक को उनके शहर में ही इज़्ज़तदार रोज़गार दिलाना HireHere का मुख्य उद्देश्य है।"',
-    newsHeading: '📰 मीडिया और समाचार में HireHere',
-    newsSubheading: 'सुजीत शिंदे के इस मिशन को देश भर के मीडिया ने सराहा',
+    newsHeading: '📰 HireHere in the Media & News',
+    newsSubheading: 'Sujit Shinde\'s mission featured across top national news platforms',
+    videoHeading: '🎥 Watch HireHere in Action',
+    videoSubheading: '10-Second Quick Overview',
     categories: {
       factory: 'क्वालिटी इंस्पेक्टर',
       driver: 'ड्राइवर',
@@ -93,6 +94,8 @@ const TRANSLATIONS = {
     quote: '"Connecting every hardworking individual with dignified local career opportunities is HireHere\'s vision."',
     newsHeading: '📰 HireHere in the Media & News',
     newsSubheading: 'Sujit Shinde\'s mission featured across top national news platforms',
+    videoHeading: '🎥 Watch HireHere in Action',
+    videoSubheading: '10-Second Quick Overview',
     categories: {
       factory: 'Quality Inspector',
       driver: 'Driver',
@@ -120,12 +123,23 @@ export default function JobPortal() {
   const [searchCategory, setSearchCategory] = useState('');
   const [searchLocation, setSearchLocation] = useState('');
   const [activeTab, setActiveTab] = useState('all');
+  const [isMuted, setIsMuted] = useState(true);
+  const videoRef = useRef<HTMLVideoElement | null>(null);
   const router = useRouter();
 
   useEffect(() => {
     const savedLang = localStorage.getItem('app_lang') as 'hi' | 'en';
     if (savedLang === 'en' || savedLang === 'hi') {
       setLang(savedLang);
+    }
+  }, []);
+
+  // Force play video on mount
+  useEffect(() => {
+    if (videoRef.current) {
+      videoRef.current.play().catch((err) => {
+        console.log("Autoplay failed, waiting for interaction", err);
+      });
     }
   }, []);
 
@@ -170,7 +184,6 @@ export default function JobPortal() {
     setSearchCategory(category === 'all' ? '' : category);
   };
 
-  // SMART SYNC HANDLER WITH SAFE FALLBACK
   const handleApplyAndCall = async (job: any) => {
     const candidatePhone = prompt(
       lang === 'hi'
@@ -185,7 +198,6 @@ export default function JobPortal() {
 
     const cleanPhone = candidatePhone.trim().replace(/\D/g, '');
 
-    // 1. Check if candidate exists in 'candidates' table
     const { data: existingCandidate } = await supabase
       .from('candidates')
       .select('*')
@@ -210,7 +222,6 @@ export default function JobPortal() {
       resumeUrl = existingCandidate.resume_url || '';
     }
 
-    // 2. Save application to Supabase safely
     const payloadToInsert: any = {
       job_id: job.id,
       applicant_name: applicantName,
@@ -241,14 +252,12 @@ export default function JobPortal() {
       return;
     }
 
-    // 3. Success Message
     alert(
       lang === 'hi'
         ? `🎉 बधाई हो ${applicantName}! आपका आवेदन सफलतापूर्वक भेज दिया गया है।`
         : `🎉 Congratulations ${applicantName}! Your application has been submitted successfully.`
     );
 
-    // 4. Trigger Direct Call / WhatsApp ONLY if employer enabled 'allow_direct_call'
     if (job.allow_direct_call !== false) {
       const callNow = confirm(lang === 'hi' ? 'क्या आप HR को सीधा कॉल करना चाहते हैं?' : 'Do you want to call the HR directly?');
       if (callNow) {
@@ -260,9 +269,16 @@ export default function JobPortal() {
     }
   };
 
+  const toggleMute = () => {
+    if (videoRef.current) {
+      videoRef.current.muted = !videoRef.current.muted;
+      setIsMuted(videoRef.current.muted);
+    }
+  };
+
   return (
     <div className="w-full min-h-screen bg-[#f8fafc] font-sans pb-20 text-[#1a1a1a]">
-      {/* ===== HEADER ===== */}
+      {/* HEADER */}
       <header className="w-full bg-[#0d47a1] text-white px-4 md:px-6 py-4 sticky top-0 z-50 shadow-md">
         <div className="w-full flex justify-between items-center flex-wrap gap-2">
           <div>
@@ -275,16 +291,14 @@ export default function JobPortal() {
           </div>
 
           <div className="flex items-center gap-2 md:gap-3 flex-wrap">
-            <div className="relative inline-block">
-              <select
-                value={lang}
-                onChange={(e) => handleLanguageChange(e.target.value as 'hi' | 'en')}
-                className="bg-white/20 border border-white/40 text-white font-bold text-xs md:text-sm px-3 py-1.5 rounded-lg cursor-pointer outline-none focus:bg-[#0d47a1]"
-              >
-                <option value="hi" className="text-black">🇮🇳 हिंदी (Hindi)</option>
-                <option value="en" className="text-black">🌐 English</option>
-              </select>
-            </div>
+            <select
+              value={lang}
+              onChange={(e) => handleLanguageChange(e.target.value as 'hi' | 'en')}
+              className="bg-white/20 border border-white/40 text-white font-bold text-xs md:text-sm px-3 py-1.5 rounded-lg cursor-pointer outline-none focus:bg-[#0d47a1]"
+            >
+              <option value="hi" className="text-black">🇮🇳 हिंदी (Hindi)</option>
+              <option value="en" className="text-black">🌐 English</option>
+            </select>
 
             <Link
               href="/employer/login"
@@ -303,7 +317,7 @@ export default function JobPortal() {
         </div>
       </header>
 
-      {/* ===== HERO SECTION ===== */}
+      {/* HERO SECTION */}
       <section className="w-full bg-gradient-to-b from-[#0d47a1] to-[#1976d2] text-white px-6 py-10 md:py-14 text-center">
         <div className="w-full">
           <h1 className="text-3xl md:text-5xl font-black leading-tight mb-3">
@@ -356,7 +370,7 @@ export default function JobPortal() {
         </div>
       </section>
 
-      {/* ===== CATEGORIES SECTION ===== */}
+      {/* CATEGORIES SECTION */}
       <section className="w-full px-6 py-6">
         <h2 className="text-xl md:text-2xl font-black text-[#0d47a1] mb-4">
           {t.catQuestion} <span className="text-[#ff6f00]">{t.catQuestionHighlight}</span> {t.catQuestionSuffix}
@@ -378,7 +392,7 @@ export default function JobPortal() {
         </div>
       </section>
 
-      {/* ===== STATS STRIP ===== */}
+      {/* STATS STRIP */}
       <div className="w-full px-6 mb-8">
         <div className="w-full bg-[#0d47a1] text-white py-6 px-6 rounded-2xl shadow-lg grid grid-cols-3 text-center divide-x divide-white/20">
           <div>
@@ -396,7 +410,7 @@ export default function JobPortal() {
         </div>
       </div>
 
-      {/* ===== JOB LISTINGS SECTION ===== */}
+      {/* JOB LISTINGS SECTION */}
       <section className="w-full px-6 py-4" id="jobs-section">
         <h2 className="text-xl md:text-2xl font-black text-[#0d47a1] mb-4">
           {t.recentJobs} <span className="text-[#ff6f00]">{t.cityHighlight}</span> {t.recentJobsSuffix}
@@ -480,7 +494,7 @@ export default function JobPortal() {
         )}
       </section>
 
-      {/* ===== FOUNDER CARD ===== */}
+      {/* FOUNDER CARD */}
       <section className="w-full px-6 py-6">
         <div className="w-full bg-gradient-to-r from-[#0d47a1] to-[#1976d2] text-white rounded-2xl p-6 md:p-8 shadow-lg flex flex-col sm:flex-row items-center gap-6">
           <div className="w-16 h-16 rounded-full bg-[#ff6f00] border-2 border-white flex items-center justify-center text-2xl font-black text-white shadow-md flex-shrink-0">
@@ -500,7 +514,7 @@ export default function JobPortal() {
         </div>
       </section>
 
-      {/* ===== NEWS ARTICLE / MEDIA COVERAGE SECTION ===== */}
+      {/* NEWS ARTICLE / MEDIA COVERAGE SECTION */}
       <section className="w-full px-6 py-6">
         <div className="w-full bg-white rounded-2xl p-6 md:p-8 border shadow-sm">
           <div className="text-center mb-6">
@@ -513,7 +527,6 @@ export default function JobPortal() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {/* Article Card 1 */}
             <div className="bg-[#f8fafc] border border-gray-200 rounded-xl p-5 hover:shadow-md transition">
               <div className="flex justify-between items-center mb-3">
                 <span className="text-xs font-bold text-[#ff6f00] bg-orange-50 px-2.5 py-1 rounded-md">
@@ -536,7 +549,6 @@ export default function JobPortal() {
               </div>
             </div>
 
-            {/* Article Card 2 */}
             <div className="bg-[#f8fafc] border border-gray-200 rounded-xl p-5 hover:shadow-md transition">
               <div className="flex justify-between items-center mb-3">
                 <span className="text-xs font-bold text-[#2e7d32] bg-green-50 px-2.5 py-1 rounded-md">
@@ -559,7 +571,6 @@ export default function JobPortal() {
               </div>
             </div>
 
-            {/* Article Card 3 */}
             <div className="bg-[#f8fafc] border border-gray-200 rounded-xl p-5 hover:shadow-md transition">
               <div className="flex justify-between items-center mb-3">
                 <span className="text-xs font-bold text-[#0d47a1] bg-blue-50 px-2.5 py-1 rounded-md">
@@ -585,7 +596,39 @@ export default function JobPortal() {
         </div>
       </section>
 
-      {/* ===== FOOTER ===== */}
+      {/* ===== 10-SECOND SHORT VIDEO SECTION (NEWS SECTION KE THEEK NICHE) ===== */}
+      <section className="w-full px-6 py-6 flex flex-col items-center justify-center">
+        <div className="text-center mb-4">
+          <h3 className="text-lg md:text-xl font-black text-[#0d47a1]">
+            {t.videoHeading}
+          </h3>
+          <p className="text-xs text-gray-500 mt-0.5">
+            {t.videoSubheading}
+          </p>
+        </div>
+
+        <div className="relative w-full max-w-[280px] rounded-2xl overflow-hidden shadow-xl border-4 border-white bg-black group">
+          <video
+            ref={videoRef}
+            src="/hero-video.mp4"
+            autoPlay
+            loop
+            muted
+            playsInline
+            className="w-full h-auto object-cover max-h-[380px]"
+          />
+          
+          <button
+            type="button"
+            onClick={toggleMute}
+            className="absolute bottom-3 right-3 bg-black/80 hover:bg-black text-white text-xs font-bold px-3 py-1.5 rounded-full backdrop-blur-md transition border border-white/40 cursor-pointer shadow-md"
+          >
+            {isMuted ? '🔇 Unmute' : '🔊 Mute'}
+          </button>
+        </div>
+      </section>
+
+      {/* FOOTER */}
       <footer className="w-full bg-[#0d47a1] text-white text-center py-10 px-6 mt-8">
         <div className="text-2xl font-black mb-1">
           Hire<span className="text-[#ff6f00]">Here</span>
@@ -599,7 +642,7 @@ export default function JobPortal() {
         </div>
       </footer>
 
-      {/* ===== FIXED BOTTOM NAVIGATION (MOBILE ONLY) ===== */}
+      {/* FIXED BOTTOM NAVIGATION (MOBILE ONLY) */}
       <nav className="md:hidden fixed bottom-0 left-0 right-0 w-full bg-white border-t border-gray-200 py-2.5 px-4 flex justify-around items-center z-50 shadow-2xl">
         <button
           type="button"
