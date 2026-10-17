@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { createClient } from '@supabase/supabase-js';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 // Supabase Client Initialization (Direct Keys + Env Fallback)
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://tumyhkuybineeodtgcka.supabase.co';
@@ -115,6 +116,7 @@ export default function JobPortal() {
   const [searchCategory, setSearchCategory] = useState('');
   const [searchLocation, setSearchLocation] = useState('');
   const [activeTab, setActiveTab] = useState('all');
+  const router = useRouter();
 
   useEffect(() => {
     const savedLang = localStorage.getItem('app_lang') as 'hi' | 'en';
@@ -164,24 +166,54 @@ export default function JobPortal() {
     setSearchCategory(category === 'all' ? '' : category);
   };
 
-  // FIXED Handler for Mandatory Apply First -> Then Direct Call / WhatsApp
+  // SMART SYNC HANDLER: Check if candidate exists, auto-sync profile or prompt registration
   const handleApplyAndCall = async (job: any) => {
-    const candidateName = prompt(lang === 'hi' ? 'अपना पूरा नाम दर्ज करें:' : 'Enter your full name:');
-    if (!candidateName) return;
+    const candidatePhone = prompt(
+      lang === 'hi'
+        ? 'आवेदन करने के लिए अपना 10 अंकों का रजिस्टर्ड मोबाइल नंबर दर्ज करें:'
+        : 'Enter your 10-digit registered mobile number to apply:'
+    );
 
-    const candidatePhone = prompt(lang === 'hi' ? 'अपना 10 अंकों का मोबाइल नंबर दर्ज करें:' : 'Enter your 10-digit mobile number:');
     if (!candidatePhone || candidatePhone.trim().length < 10) {
       alert(lang === 'hi' ? 'कृपया सही मोबाइल नंबर दर्ज करें।' : 'Please enter a valid mobile number.');
       return;
     }
 
-    // 1. Save application to Supabase first
+    const cleanPhone = candidatePhone.trim().replace(/\D/g, '');
+
+    // 1. Check if candidate exists in 'candidates' table
+    const { data: existingCandidate } = await supabase
+      .from('candidates')
+      .select('*')
+      .eq('phone', cleanPhone)
+      .maybeSingle();
+
+    let applicantName = '';
+    let resumeUrl = '';
+
+    if (!existingCandidate) {
+      const goToRegister = confirm(
+        lang === 'hi'
+          ? 'आपका यह मोबाइल नंबर रजिस्टर्ड नहीं है। क्या आप पहले वर्कर रजिस्ट्रेशन करना चाहते हैं?'
+          : 'Your mobile number is not registered. Would you like to complete Worker Registration first?'
+      );
+      if (goToRegister) {
+        router.push('/employee');
+      }
+      return;
+    } else {
+      applicantName = existingCandidate.full_name;
+      resumeUrl = existingCandidate.resume_url || '';
+    }
+
+    // 2. Save application to Supabase using synced profile info
     const { error } = await supabase.from('job_applications').insert([
       {
         job_id: job.id,
         employer_id: job.employer_id,
-        applicant_name: candidateName.trim(),
-        applicant_phone: candidatePhone.trim(),
+        applicant_name: applicantName,
+        applicant_phone: cleanPhone,
+        resume_url: resumeUrl,
       },
     ]);
 
@@ -190,10 +222,14 @@ export default function JobPortal() {
       return;
     }
 
-    // 2. Alert Candidate ONLY after application is saved in DB
-    alert(lang === 'hi' ? '🎉 आपका आवेदन सफलतापूर्वक भेज दिया गया है!' : '🎉 Application submitted successfully!');
+    // 3. Success Message
+    alert(
+      lang === 'hi'
+        ? `🎉 बधाई हो ${applicantName}! आपका आवेदन सफलतापूर्वक भेज दिया गया है।`
+        : `🎉 Congratulations ${applicantName}! Your application has been submitted successfully.`
+    );
 
-    // 3. Trigger Direct Call / WhatsApp ONLY if employer enabled 'allow_direct_call'
+    // 4. Trigger Direct Call / WhatsApp ONLY if employer enabled 'allow_direct_call'
     if (job.allow_direct_call !== false) {
       const callNow = confirm(lang === 'hi' ? 'क्या आप HR को सीधा कॉल करना चाहते हैं?' : 'Do you want to call the HR directly?');
       if (callNow) {
