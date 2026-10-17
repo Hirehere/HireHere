@@ -22,7 +22,7 @@ export default function ForgotPassword() {
     const cleanPhone = phone.trim().replace(/\D/g, '');
     const cleanName = fullName.trim();
 
-    // 1. Check in 'employers' table if Email, Name & Phone match
+    // 1. Check in 'employers' table
     const { data: employer, error } = await supabase
       .from('employers')
       .select('*')
@@ -36,8 +36,8 @@ export default function ForgotPassword() {
     }
 
     // 2. Cross-check name and phone
-    const dbName = (employer.full_name || employer.name || '').trim().toLowerCase();
-    const dbPhone = (employer.phone || '').trim().replace(/\D/g, '');
+    const dbName = String(employer.full_name || employer.name || '').trim().toLowerCase();
+    const dbPhone = String(employer.phone || '').trim().replace(/\D/g, '');
 
     if (dbName !== cleanName.toLowerCase() || dbPhone !== cleanPhone) {
       setErrorMsg('दर्ज किया गया नाम या मोबाइल नंबर इस ईमेल आईडी से मैच नहीं कर रहा है।');
@@ -45,7 +45,7 @@ export default function ForgotPassword() {
       return;
     }
 
-    // 3. If matched, redirect securely to reset-password page with email in query params
+    // 3. Redirect securely to reset-password page
     router.push(`/employer/reset-password?email=${encodeURIComponent(cleanEmail)}`);
     setLoading(false);
   };
