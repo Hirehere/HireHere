@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
 export default function ForgotPassword() {
-  const [step, setStep] = useState(1); // Step 1: Verify details, Step 2: Update password
+  const [step, setStep] = useState(1);
   const [email, setEmail] = useState('');
   const [companyName, setCompanyName] = useState('');
   const [phone, setPhone] = useState('');
@@ -18,7 +18,6 @@ export default function ForgotPassword() {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
-  // 1. Verify Company First Name, Email & Phone against 'employers' table
   const handleVerifyDetails = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg('');
@@ -26,13 +25,11 @@ export default function ForgotPassword() {
 
     const cleanEmail = email.trim().toLowerCase();
     const cleanPhone = phone.trim().replace(/\D/g, '');
-    
-    // Extract first word of input company name (before first space)
     const inputFirstWord = companyName.trim().split(/\s+/)[0]?.toLowerCase() || '';
 
     try {
       const { data: employer, error } = await supabase
-        .from('employers')
+        .from('employer_profiles')
         .select('*')
         .eq('email', cleanEmail)
         .maybeSingle();
@@ -43,32 +40,25 @@ export default function ForgotPassword() {
         return;
       }
 
-      // Get DB company name and extract its first word
-      const dbCompanyFull = String(
-        employer.company_name || employer.company || employer.name || employer.full_name || ''
-      ).trim();
+      const dbCompanyFull = String(employer.company_name || '').trim();
       const dbFirstWord = dbCompanyFull.split(/\s+/)[0]?.toLowerCase() || '';
-
       const dbPhone = String(employer.phone || '').trim().replace(/\D/g, '');
 
-      // Check if first word of company name matches (ignoring case) and phone matches
       if (dbFirstWord !== inputFirstWord || dbPhone !== cleanPhone) {
         setErrorMsg('Company ka pehla naam ya mobile number is email ID se match nahi kar raha hai.');
         setLoading(false);
         return;
       }
 
-      // Details matched successfully, move to password update step
       setStep(2);
       setSuccessMsg('Pahchan safaltapoorvak verify ho gayi hai! Ab naya password set karein.');
     } catch (err: any) {
-      setErrorMsg('Kuch takniki samasya aayi hai. Kripya punah prayas karein.');
+      setErrorMsg('Kuch takniki samasya aayi hai.');
     } finally {
       setLoading(false);
     }
   };
 
-  // 2. Update Password directly using Supabase Auth
   const handleUpdatePassword = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg('');
@@ -135,23 +125,19 @@ export default function ForgotPassword() {
         {step === 1 ? (
           <form onSubmit={handleVerifyDetails} className="space-y-4">
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1">
-                Company First Name (कंपनी का पहला नाम)
-              </label>
+              <label className="block text-sm font-semibold text-gray-700 mb-1">Company First Name</label>
               <input
                 type="text"
                 required
                 value={companyName}
                 onChange={(e) => setCompanyName(e.target.value)}
-                placeholder="Jaise: Manufyn"
+                placeholder="Maswer"
                 className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-gray-800"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1">
-                Registered Email ID
-              </label>
+              <label className="block text-sm font-semibold text-gray-700 mb-1">Registered Email ID</label>
               <input
                 type="email"
                 required
@@ -163,16 +149,14 @@ export default function ForgotPassword() {
             </div>
 
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1">
-                Registered Mobile Number (10 Digits)
-              </label>
+              <label className="block text-sm font-semibold text-gray-700 mb-1">Registered Mobile Number</label>
               <input
                 type="tel"
                 required
-                maxLength={10}
+                maxLength={15}
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
-                placeholder="9876543210"
+                placeholder="8484817742"
                 className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-gray-800"
               />
             </div>
@@ -188,9 +172,7 @@ export default function ForgotPassword() {
         ) : (
           <form onSubmit={handleUpdatePassword} className="space-y-4">
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1">
-                Naya Password (New Password)
-              </label>
+              <label className="block text-sm font-semibold text-gray-700 mb-1">Naya Password</label>
               <input
                 type="password"
                 required
@@ -202,9 +184,7 @@ export default function ForgotPassword() {
             </div>
 
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1">
-                Password ki pushti karein (Confirm Password)
-              </label>
+              <label className="block text-sm font-semibold text-gray-700 mb-1">Confirm Password</label>
               <input
                 type="password"
                 required
