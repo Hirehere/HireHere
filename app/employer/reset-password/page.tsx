@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, Suspense } from 'react';
 import { supabase } from '../../lib/supabase';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 
 function ResetPasswordForm() {
   const [newPassword, setNewPassword] = useState('');
@@ -11,14 +11,18 @@ function ResetPasswordForm() {
   const [message, setMessage] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const email = searchParams.get('email');
 
   useEffect(() => {
-    if (!email) {
-      router.push('/employer/forgot-password');
-    }
-  }, [email, router]);
+    // Check if hash contains recovery token and let Supabase establish session
+    const handleRecoverySession = async () => {
+      const hash = window.location.hash;
+      if (hash && hash.includes('type=recovery')) {
+        // Supabase client automatically handles hash fragments on client init, 
+        // but we can ensure session exists.
+      }
+    };
+    handleRecoverySession();
+  }, []);
 
   const handleUpdatePassword = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -26,12 +30,12 @@ function ResetPasswordForm() {
     setMessage('');
 
     if (newPassword.length < 6) {
-      setErrorMsg('पासवर्ड कम से कम 6 अक्षरों का होना चाहिए।');
+      setErrorMsg('Password kam se kam 6 aksharon ka hona chahiye.');
       return;
     }
 
     if (newPassword !== confirmPassword) {
-      setErrorMsg('दोनों पासवर्ड मैच नहीं कर रहे हैं।');
+      setErrorMsg('Dono password match nahi kar rahe hain.');
       return;
     }
 
@@ -42,9 +46,9 @@ function ResetPasswordForm() {
     });
 
     if (error) {
-      setErrorMsg(error.message || 'पासवर्ड अपडेट करने में समस्या आई।');
+      setErrorMsg(error.message || 'Password update karne me samasya aayi. Kripya naya link mangaayein.');
     } else {
-      setMessage('🎉 पासवर्ड सफलतापूर्वक बदल दिया गया है! आपको लॉगिन पेज पर भेजा जा रहा है...');
+      setMessage('🎉 Password safaltapoorvak badal diya gaya hai! Aapko login page par bheja ja raha hai...');
       setTimeout(() => {
         router.push('/employer/login');
       }, 2500);
@@ -57,12 +61,11 @@ function ResetPasswordForm() {
     <div className="max-w-md w-full bg-white rounded-2xl shadow-xl p-8 border border-gray-100">
       <div className="text-center mb-6">
         <h1 className="text-2xl font-bold text-gray-800">
-          नया पासवर्ड बनाएं (New Password)
+          Naya Password Banayein (New Password)
         </h1>
         <p className="text-gray-500 text-sm mt-1">
-          सत्यापन सफल रहा! कृपया अपने खाते के लिए नया पासवर्ड दर्ज करें।
+          Kripya apne khate ke liye naya password darj karein.
         </p>
-        {email && <p className="text-xs text-blue-600 font-semibold mt-1">({email})</p>}
       </div>
 
       {message && (
@@ -80,7 +83,7 @@ function ResetPasswordForm() {
       <form onSubmit={handleUpdatePassword} className="space-y-4">
         <div>
           <label className="block text-sm font-semibold text-gray-700 mb-1">
-            नया पासवर्ड (New Password)
+            Naya Password (New Password)
           </label>
           <input
             type="password"
@@ -94,7 +97,7 @@ function ResetPasswordForm() {
 
         <div>
           <label className="block text-sm font-semibold text-gray-700 mb-1">
-            पासवर्ड की पुष्टि करें (Confirm Password)
+            Password ki pushti karein (Confirm Password)
           </label>
           <input
             type="password"
@@ -111,7 +114,7 @@ function ResetPasswordForm() {
           disabled={loading}
           className="w-full bg-blue-700 hover:bg-blue-800 text-white font-bold py-2.5 rounded-lg shadow transition disabled:opacity-50 cursor-pointer"
         >
-          {loading ? 'पासवर्ड सेव हो रहा है...' : 'नया पासवर्ड सेव करें'}
+          {loading ? 'Password save ho raha hai...' : 'Naya Password Save Karein'}
         </button>
       </form>
     </div>
@@ -121,7 +124,7 @@ function ResetPasswordForm() {
 export default function ResetPasswordPage() {
   return (
     <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
-      <Suspense fallback={<div className="text-center text-gray-600 font-medium">लोड हो रहा है...</div>}>
+      <Suspense fallback={<div className="text-center text-gray-600 font-medium">Load ho raha hai...</div>}>
         <ResetPasswordForm />
       </Suspense>
     </div>
