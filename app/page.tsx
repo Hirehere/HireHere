@@ -166,7 +166,7 @@ export default function JobPortal() {
     setSearchCategory(category === 'all' ? '' : category);
   };
 
-  // SMART SYNC HANDLER: Check if candidate exists, auto-sync profile or prompt registration
+  // SMART SYNC HANDLER WITH SAFE FALLBACK
   const handleApplyAndCall = async (job: any) => {
     const candidatePhone = prompt(
       lang === 'hi'
@@ -188,7 +188,7 @@ export default function JobPortal() {
       .eq('phone', cleanPhone)
       .maybeSingle();
 
-    let applicantName = '';
+    let applicantName = 'Candidate';
     let resumeUrl = '';
 
     if (!existingCandidate) {
@@ -202,20 +202,35 @@ export default function JobPortal() {
       }
       return;
     } else {
-      applicantName = existingCandidate.full_name;
+      applicantName = existingCandidate.full_name || 'Candidate';
       resumeUrl = existingCandidate.resume_url || '';
     }
 
-    // 2. Save application to Supabase using synced profile info
-    const { error } = await supabase.from('job_applications').insert([
-      {
+    // 2. Save application to Supabase safely (Compatible with multiple column schema types)
+    const payloadToInsert: any = {
+      job_id: job.id,
+      employer_id: job.employer_id,
+      resume_url: resumeUrl,
+    };
+
+    // Try adding name/phone fields based on common naming conventions
+    payloadToInsert.applicant_name = applicantName;
+    payloadToInsert.applicant_phone = cleanPhone;
+
+    let { error } = await supabase.from('job_applications').insert([payloadToInsert]);
+
+    // Fallback if specific schema column names differ
+    if (error && error.message.includes('column')) {
+      const fallbackPayload = {
         job_id: job.id,
         employer_id: job.employer_id,
-        applicant_name: applicantName,
-        applicant_phone: cleanPhone,
+        name: applicantName,
+        phone: cleanPhone,
         resume_url: resumeUrl,
-      },
-    ]);
+      };
+      const res = await supabase.from('job_applications').insert([fallbackPayload]);
+      error = res.error;
+    }
 
     if (error) {
       alert((lang === 'hi' ? 'आवेदन करने में त्रुटि: ' : 'Error applying: ') + error.message);
