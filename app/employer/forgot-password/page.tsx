@@ -2,16 +2,13 @@
 
 import React, { useState } from 'react';
 import { supabase } from '../../lib/supabase';
-import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
 export default function ForgotPassword() {
-  const [phone, setPhone] = useState('');
-  const [newPassword, setNewPassword] = useState('');
+  const [email, setEmail] = useState('');
   const [message, setMessage] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
   const [loading, setLoading] = useState(false);
-  const router = useRouter();
 
   const handleResetPassword = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -19,24 +16,14 @@ export default function ForgotPassword() {
     setMessage('');
     setLoading(true);
 
-    if (phone.trim().length < 10) {
-      setErrorMsg('कृपया 10 अंकों का सही मोबाइल नंबर दर्ज करें।');
-      setLoading(false);
-      return;
-    }
-
-    // Mobile number to dummy email mapping
-    const formattedEmail = `${phone.trim().replace(/\D/g, '')}@hirehere.in`;
-
-    // Reset password request via Supabase Auth
-    const { error } = await supabase.auth.resetPasswordForEmail(formattedEmail, {
+    const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
       redirectTo: `${window.location.origin}/employer/login`,
     });
 
     if (error) {
-      setErrorMsg('इस मोबाइल नंबर से कोई अकाउंट नहीं मिला या कोई एरर आया।');
+      setErrorMsg(error.message || 'पासवर्ड रीसेट ईमेल भेजने में समस्या आई।');
     } else {
-      setMessage('पासवर्ड रीसेट करने का लिंक जारी कर दिया गया है। कृपया लॉग इन करने का प्रयास करें।');
+      setMessage('आपकी ईमेल आईडी पर पासवर्ड रीसेट लिंक भेज दिया गया है। अपना इनबॉक्स / स्पैम फोल्डर चेक करें।');
     }
 
     setLoading(false);
@@ -52,7 +39,7 @@ export default function ForgotPassword() {
             पासवर्ड भूल गए? (Forgot Password)
           </h1>
           <p className="text-gray-500 text-sm mt-1">
-            अपना रजिस्टर्ड मोबाइल नंबर दर्ज करके पासवर्ड रीसेट करें।
+            अपनी रजिस्टर्ड ईमेल आईडी दर्ज करें, हम आपको रीसेट लिंक भेजेंगे।
           </p>
         </div>
 
@@ -73,20 +60,16 @@ export default function ForgotPassword() {
         <form onSubmit={handleResetPassword} className="space-y-4">
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-1">
-              रजिस्टर्ड मोबाइल नंबर
+              रजिस्टर्ड ईमेल आईडी (Registered Email)
             </label>
-            <div className="relative">
-              <span className="absolute left-3 top-2.5 text-gray-500 font-medium">+91</span>
-              <input
-                type="tel"
-                required
-                maxLength={10}
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                placeholder="9876543210"
-                className="w-full pl-12 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none font-medium"
-              />
-            </div>
+            <input
+              type="email"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="hr@company.com"
+              className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-gray-800 font-medium"
+            />
           </div>
 
           <button
@@ -94,7 +77,7 @@ export default function ForgotPassword() {
             disabled={loading}
             className="w-full bg-blue-700 hover:bg-blue-800 text-white font-bold py-2.5 rounded-lg shadow transition disabled:opacity-50"
           >
-            {loading ? 'प्रक्रिया जारी है...' : 'पासवर्ड रीसेट की रिक्वेस्ट भेजें'}
+            {loading ? 'भेजा जा रहा है...' : 'पासवर्ड रीसेट लिंक भेजें'}
           </button>
         </form>
 

@@ -7,6 +7,7 @@ import Link from 'next/link';
 
 export default function EmployerAuth() {
   const [isRegister, setIsRegister] = useState(false);
+  const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
   const [companyName, setCompanyName] = useState('');
@@ -25,29 +26,21 @@ export default function EmployerAuth() {
     }
   };
 
-  // Helper: Mobile Number ko Email format me badalne ke liye
-  const getFormattedEmail = (mobile: string) => {
-    const cleanNumber = mobile.trim().replace(/\D/g, '');
-    return `${cleanNumber}@hirehere.in`;
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg('');
     setLoading(true);
 
-    if (phone.trim().length < 10) {
-      setErrorMsg('कृपया 10 अंकों का सही मोबाइल नंबर दर्ज करें।');
-      setLoading(false);
-      return;
-    }
-
-    const formattedEmail = getFormattedEmail(phone);
-
     if (isRegister) {
       // REGISTER LOGIC
+      if (phone.trim().length < 10) {
+        setErrorMsg('कृपया 10 अंकों का सही मोबाइल नंबर दर्ज करें।');
+        setLoading(false);
+        return;
+      }
+
       const { data, error } = await supabase.auth.signUp({
-        email: formattedEmail,
+        email: email.trim(),
         password: password,
         options: {
           data: {
@@ -60,18 +53,18 @@ export default function EmployerAuth() {
       if (error) {
         setErrorMsg(error.message);
       } else {
-        alert('Account सफलतापूर्वक बन गया है! अब Login करें।');
+        alert('Account सफलतापूर्वक बन गया है! यदि ईमेल वेरिफिकेशन ऑन है तो इनबॉक्स चेक करें, अन्यथा लॉगिन करें।');
         setIsRegister(false);
       }
     } else {
       // LOGIN LOGIC
       const { data, error } = await supabase.auth.signInWithPassword({
-        email: formattedEmail,
+        email: email.trim(),
         password: password,
       });
 
       if (error) {
-        setErrorMsg('गलत मोबाइल नंबर या पासवर्ड। (Invalid login credentials)');
+        setErrorMsg('गलत ईमेल आईडी या पासवर्ड। (Invalid login credentials)');
       } else {
         router.push('/employer/dashboard');
       }
@@ -105,11 +98,11 @@ export default function EmployerAuth() {
 
         <form onSubmit={handleSubmit} className="space-y-4">
           
-          {/* Registration Company Name */}
+          {/* Company Name (Registration Only) */}
           {isRegister && (
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-1">
-                कंपनी / दुकान का नाम (Company Name)
+                कंपनी / दुकान का नाम (Company Name) *
               </label>
               <input
                 type="text"
@@ -122,32 +115,49 @@ export default function EmployerAuth() {
             </div>
           )}
 
-          {/* Mobile Number Field */}
+          {/* Email Address (Mandatory for Both) */}
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-1">
-              मोबाइल नंबर (Mobile Number)
+              ईमेल आईडी (Email Address) *
             </label>
-            <div className="relative">
-              <span className="absolute left-3 top-2.5 text-gray-500 font-medium">
-                +91
-              </span>
-              <input
-                type="tel"
-                required
-                maxLength={10}
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                placeholder="9876543210"
-                className="w-full pl-12 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-gray-800 font-medium"
-              />
-            </div>
+            <input
+              type="email"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="hr@company.com"
+              className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-gray-800 font-medium"
+            />
           </div>
+
+          {/* Mobile Number Field (Registration Only) */}
+          {isRegister && (
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-1">
+                मोबाइल नंबर (Mobile Number) *
+              </label>
+              <div className="relative">
+                <span className="absolute left-3 top-2.5 text-gray-500 font-medium">
+                  +91
+                </span>
+                <input
+                  type="tel"
+                  required
+                  maxLength={10}
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  placeholder="9876543210"
+                  className="w-full pl-12 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-gray-800 font-medium"
+                />
+              </div>
+            </div>
+          )}
 
           {/* Password Field */}
           <div>
             <div className="flex justify-between items-center mb-1">
               <label className="text-sm font-semibold text-gray-700">
-                पासवर्ड (Password)
+                पासवर्ड (Password) *
               </label>
               {!isRegister && (
                 <Link href="/employer/forgot-password" className="text-xs text-blue-600 hover:underline">
