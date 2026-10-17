@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import React, { useState, useEffect } from "react";
 import { createClient } from "@supabase/supabase-js";
@@ -29,7 +29,10 @@ type TranslationType = {
   city: string;
   jobCategory: string;
   designation: string;
+  customDesignationLabel: string;
+  customDesignationPlaceholder: string;
   qualification: string;
+  specializationLabel: string;
   experience: string;
   noticePeriod: string;
   expectedSalary: string;
@@ -40,6 +43,8 @@ type TranslationType = {
   alreadyRegisteredErr: string;
   successMsg: string;
   qualifications: { value: string; label: string }[];
+  graduateDegrees: string[];
+  postGraduateDegrees: string[];
   experiences: { value: string; label: string }[];
   noticePeriods: { value: string; label: string }[];
   cities: string[];
@@ -61,7 +66,10 @@ const TRANSLATIONS: Record<"hi" | "en", TranslationType> = {
     city: "आपका शहर",
     jobCategory: "किस तरह का काम चाहिए?",
     designation: "पद",
+    customDesignationLabel: "अपना पद/रोल टाइप करें",
+    customDesignationPlaceholder: "उदा. Accountant, Cook, Welder",
     qualification: "शैक्षणिक योग्यता",
+    specializationLabel: "स्पेशलाइजेशन / डिग्री चुनें",
     experience: "अनुभव",
     noticePeriod: "नोटिस पीरियड",
     expectedSalary: "अपेक्षित वेतन (प्रति माह)",
@@ -76,8 +84,30 @@ const TRANSLATIONS: Record<"hi" | "en", TranslationType> = {
       { value: "10th Pass", label: "10th पास" },
       { value: "12th Pass", label: "12th पास" },
       { value: "ITI / Diploma", label: "ITI / डिप्लोमा" },
-      { value: "Graduate", label: "ग्रेजुएट" },
-      { value: "Post Graduate", label: "पोस्ट ग्रेजुएट" },
+      { value: "Graduate", label: "ग्रेजुएट (Graduate)" },
+      { value: "Post Graduate", label: "पोस्ट ग्रेजुएट (Post Graduate)" },
+    ],
+    graduateDegrees: [
+      "BA (Bachelor of Arts)",
+      "B.Com (Bachelor of Commerce)",
+      "B.Sc (Bachelor of Science)",
+      "B.E / B.Tech (Engineering)",
+      "BCA (Computer Applications)",
+      "BBA (Business Administration)",
+      "B.Pharma (Pharmacy)",
+      "B.Ed (Education)",
+      "Other Graduate Degree"
+    ],
+    postGraduateDegrees: [
+      "MBA (Business Administration)",
+      "MA (Master of Arts)",
+      "M.Com (Master of Commerce)",
+      "M.Sc (Master of Science)",
+      "M.E / M.Tech (Engineering)",
+      "MCA (Computer Applications)",
+      "M.Pharma (Pharmacy)",
+      "M.Ed (Education)",
+      "Other Post Graduate Degree"
     ],
     experiences: [
       { value: "Fresher", label: "फ्रेशर (कोई अनुभव नहीं)" },
@@ -153,7 +183,10 @@ const TRANSLATIONS: Record<"hi" | "en", TranslationType> = {
     city: "Your City",
     jobCategory: "Job Category",
     designation: "Designation",
+    customDesignationLabel: "Type your Designation / Role",
+    customDesignationPlaceholder: "e.g. Accountant, Cook, Welder",
     qualification: "Qualification",
+    specializationLabel: "Select Specialization / Degree",
     experience: "Experience",
     noticePeriod: "Notice Period",
     expectedSalary: "Expected Salary (Per Month)",
@@ -170,6 +203,28 @@ const TRANSLATIONS: Record<"hi" | "en", TranslationType> = {
       { value: "ITI / Diploma", label: "ITI / Diploma" },
       { value: "Graduate", label: "Graduate" },
       { value: "Post Graduate", label: "Post Graduate" },
+    ],
+    graduateDegrees: [
+      "BA (Bachelor of Arts)",
+      "B.Com (Bachelor of Commerce)",
+      "B.Sc (Bachelor of Science)",
+      "B.E / B.Tech (Engineering)",
+      "BCA (Computer Applications)",
+      "BBA (Business Administration)",
+      "B.Pharma (Pharmacy)",
+      "B.Ed (Education)",
+      "Other Graduate Degree"
+    ],
+    postGraduateDegrees: [
+      "MBA (Business Administration)",
+      "MA (Master of Arts)",
+      "M.Com (Master of Commerce)",
+      "M.Sc (Master of Science)",
+      "M.E / M.Tech (Engineering)",
+      "MCA (Computer Applications)",
+      "M.Pharma (Pharmacy)",
+      "M.Ed (Education)",
+      "Other Post Graduate Degree"
     ],
     experiences: [
       { value: "Fresher", label: "Fresher (No Experience)" },
@@ -251,6 +306,8 @@ export default function EmployeeRegister() {
   const defaultCategory = categoryKeys[0] || "";
 
   const [selectedCategory, setSelectedCategory] = useState<string>(defaultCategory);
+  const [customDesignation, setCustomDesignation] = useState<string>("");
+  const [specialization, setSpecialization] = useState<string>("");
   
   const [formData, setFormData] = useState({
     name: "",
@@ -272,6 +329,8 @@ export default function EmployeeRegister() {
     const newCatKeys = Object.keys(newTranslations.categories);
     const newCat = newCatKeys[0] || "";
     setSelectedCategory(newCat);
+    setCustomDesignation("");
+    setSpecialization("");
     setFormData((prev) => ({
       ...prev,
       city: newTranslations.cities[0],
@@ -284,12 +343,18 @@ export default function EmployeeRegister() {
 
   const handleCategoryChange = (category: string) => {
     setSelectedCategory(category);
+    setCustomDesignation("");
     const availableDesignations = t.categories[category] || [];
     setFormData({
       ...formData,
       job_category: category,
       designation: availableDesignations[0] || "",
     });
+  };
+
+  const handleQualificationChange = (val: string) => {
+    setFormData({ ...formData, qualification: val });
+    setSpecialization(""); // Reset specialization when qualification changes
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -330,6 +395,16 @@ export default function EmployeeRegister() {
         resumeUrl = publicUrlData.publicUrl;
       }
 
+      // Final designation calculation (if Other category is chosen)
+      const isOtherCat = selectedCategory === "अन्य" || selectedCategory === "Other";
+      const finalDesignation = isOtherCat && customDesignation.trim() ? customDesignation.trim() : formData.designation;
+
+      // Final qualification string with specialization if Graduate or Post Graduate
+      let finalQualification = formData.qualification;
+      if ((formData.qualification === "Graduate" || formData.qualification === "Post Graduate") && specialization.trim()) {
+        finalQualification = `${formData.qualification} - ${specialization.trim()}`;
+      }
+
       // Insert record
       const { error } = await supabase.from("candidates").insert([
         {
@@ -337,8 +412,8 @@ export default function EmployeeRegister() {
           phone: formattedPhone,
           city: formData.city,
           job_category: formData.job_category,
-          designation: formData.designation,
-          qualification: formData.qualification,
+          designation: finalDesignation,
+          qualification: finalQualification,
           experience: formData.experience,
           notice_period: formData.notice_period,
           expected_salary: formData.expected_salary,
@@ -354,6 +429,8 @@ export default function EmployeeRegister() {
       const resetCatKeys = Object.keys(t.categories);
       const resetCat = resetCatKeys[0] || "";
       setSelectedCategory(resetCat);
+      setCustomDesignation("");
+      setSpecialization("");
       setFormData({
         name: "",
         phone: "",
@@ -385,6 +462,7 @@ export default function EmployeeRegister() {
   };
 
   const currentDesignations: string[] = t.categories[selectedCategory] || [];
+  const isOtherCategory = selectedCategory === "अन्य" || selectedCategory === "Other";
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-900 via-blue-800 to-slate-900 text-gray-800">
@@ -490,20 +568,31 @@ export default function EmployeeRegister() {
               </select>
             </div>
 
-            {/* Designation */}
+            {/* Designation / Custom Designation */}
             <div>
               <label className="block text-sm font-semibold text-slate-700 mb-1">
                 {t.designation} *
               </label>
-              <select
-                className="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white text-slate-800"
-                value={formData.designation}
-                onChange={(e) => setFormData({ ...formData, designation: e.target.value })}
-              >
-                {currentDesignations.map((desig: string) => (
-                  <option key={desig} value={desig}>{desig}</option>
-                ))}
-              </select>
+              {isOtherCategory ? (
+                <input
+                  type="text"
+                  required
+                  placeholder={t.customDesignationPlaceholder}
+                  className="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition text-slate-800"
+                  value={customDesignation}
+                  onChange={(e) => setCustomDesignation(e.target.value)}
+                />
+              ) : (
+                <select
+                  className="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white text-slate-800"
+                  value={formData.designation}
+                  onChange={(e) => setFormData({ ...formData, designation: e.target.value })}
+                >
+                  {currentDesignations.map((desig: string) => (
+                    <option key={desig} value={desig}>{desig}</option>
+                  ))}
+                </select>
+              )}
             </div>
 
             {/* Qualification */}
@@ -514,13 +603,53 @@ export default function EmployeeRegister() {
               <select
                 className="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white text-slate-800"
                 value={formData.qualification}
-                onChange={(e) => setFormData({ ...formData, qualification: e.target.value })}
+                onChange={(e) => handleQualificationChange(e.target.value)}
               >
                 {t.qualifications.map((q) => (
                   <option key={q.value} value={q.value}>{q.label}</option>
                 ))}
               </select>
             </div>
+
+            {/* Specialization Dropdown if Graduate is selected */}
+            {formData.qualification === "Graduate" && (
+              <div>
+                <label className="block text-sm font-semibold text-slate-700 mb-1">
+                  {t.specializationLabel} *
+                </label>
+                <select
+                  required
+                  className="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white text-slate-800"
+                  value={specialization}
+                  onChange={(e) => setSpecialization(e.target.value)}
+                >
+                  <option value="">-- अपनी डिग्री चुनें --</option>
+                  {t.graduateDegrees.map((deg) => (
+                    <option key={deg} value={deg}>{deg}</option>
+                  ))}
+                </select>
+              </div>
+            )}
+
+            {/* Specialization Dropdown if Post Graduate is selected */}
+            {formData.qualification === "Post Graduate" && (
+              <div>
+                <label className="block text-sm font-semibold text-slate-700 mb-1">
+                  {t.specializationLabel} *
+                </label>
+                <select
+                  required
+                  className="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white text-slate-800"
+                  value={specialization}
+                  onChange={(e) => setSpecialization(e.target.value)}
+                >
+                  <option value="">-- अपनी मास्टर डिग्री चुनें --</option>
+                  {t.postGraduateDegrees.map((deg) => (
+                    <option key={deg} value={deg}>{deg}</option>
+                  ))}
+                </select>
+              </div>
+            )}
 
             {/* Experience */}
             <div>
