@@ -262,8 +262,25 @@ export default function JobPortal() {
         </div>
       </section>
 
+      {/* ===== 10-SECOND SHORT VIDEO SECTION ===== */}
+      <section className="w-full px-6 py-8 flex flex-col items-center justify-center">
+        <div className="w-full max-w-md rounded-2xl overflow-hidden shadow-xl border-4 border-white bg-black">
+          <video
+            src="/hero-video.mp4"
+            autoPlay
+            loop
+            muted
+            playsInline
+            className="w-full h-auto object-cover"
+          />
+        </div>
+        <p className="text-xs md:text-sm text-gray-600 mt-2 font-bold">
+          🎥 Direct Call & WhatsApp hiring for local workers
+        </p>
+      </section>
+
       {/* ===== CATEGORIES SECTION ===== */}
-      <section className="w-full px-6 py-8">
+      <section className="w-full px-6 py-4">
         <h2 className="text-xl md:text-2xl font-black text-[#0d47a1] mb-4">
           {t.catQuestion} <span className="text-[#ff6f00]">{t.catQuestionHighlight}</span> {t.catQuestionSuffix}
         </h2>
