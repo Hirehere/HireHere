@@ -18,20 +18,23 @@ export default function EmployerSignup() {
   // STEP 1: Send OTP to Email
   const handleSendOtp = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email) return;
+    if (!email) {
+      alert('कृपया अपनी ईमेल आईडी दर्ज करें।');
+      return;
+    }
     setLoading(true);
 
     try {
       const cleanEmail = email.trim().toLowerCase();
       
-      const { error } = await supabase.auth.signInWithOtp({
+      const { error } = await supabase.auth.signUp({
         email: cleanEmail,
-        options: {
-          shouldCreateUser: true,
-        },
+        password: 'TempPassword123!',
       });
 
-      if (error) throw error;
+      if (error && !error.message.includes('already registered')) {
+        throw error;
+      }
 
       alert('Verification OTP आपकी ईमेल पर भेज दिया गया है। कृपया दर्ज करें।');
       setStep('otp');
@@ -45,14 +48,17 @@ export default function EmployerSignup() {
   // STEP 2: Verify OTP
   const handleVerifyOtp = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!otp) return;
+    if (!otp) {
+      alert('कृपया 6 अंकों का OTP दर्ज करें।');
+      return;
+    }
     setLoading(true);
 
     try {
       const { data, error } = await supabase.auth.verifyOtp({
         email: email.trim().toLowerCase(),
         token: otp.trim(),
-        type: 'email',
+        type: 'signup',
       });
 
       if (error) throw error;
@@ -107,7 +113,7 @@ export default function EmployerSignup() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
-      <div className="max-w-md w-full bg-white rounded-xl shadow-md p-6">
+      <div className="max-w-md w-full bg-white rounded-xl shadow-md p-6 border border-gray-100">
         <div className="text-center mb-6">
           <h1 className="text-2xl font-black text-gray-800">
             Hire<span className="text-[#ff6f00]">Here</span> Employer
@@ -121,9 +127,9 @@ export default function EmployerSignup() {
 
         {/* STEP 1: Enter Email Only */}
         {step === 'email' && (
-          <form onSubmit={handleSendOtp} className="space-y-4">
+          <form onSubmit={handleSendOtp} className="space-y-5">
             <div>
-              <label className="block text-sm font-medium text-gray-700">
+              <label className="block text-sm font-semibold text-gray-700 mb-1">
                 ईमेल आईडी (Email Address) *
               </label>
               <input
@@ -132,14 +138,14 @@ export default function EmployerSignup() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="name@company.com"
-                className="w-full border rounded p-2.5 mt-1 focus:ring-2 focus:ring-blue-500 outline-none text-gray-800"
+                className="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-500 outline-none text-gray-800"
               />
             </div>
 
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-blue-600 text-white font-bold py-2.5 rounded-lg hover:bg-blue-700 transition cursor-pointer"
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg shadow-md transition disabled:opacity-50 cursor-pointer block text-center"
             >
               {loading ? 'OTP भेजा जा रहा है...' : 'OTP भेजें और आगे बढ़ें'}
             </button>
@@ -148,13 +154,13 @@ export default function EmployerSignup() {
 
         {/* STEP 2: Enter OTP */}
         {step === 'otp' && (
-          <form onSubmit={handleVerifyOtp} className="space-y-4">
+          <form onSubmit={handleVerifyOtp} className="space-y-5">
             <div className="bg-blue-50 p-3 rounded-lg text-sm text-blue-800 border border-blue-200">
               हमने आपके ईमेल <b>{email}</b> पर 6 अंकों का OTP भेजा है।
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700">
+              <label className="block text-sm font-semibold text-gray-700 mb-1">
                 Enter Email OTP *
               </label>
               <input
@@ -164,14 +170,14 @@ export default function EmployerSignup() {
                 value={otp}
                 onChange={(e) => setOtp(e.target.value)}
                 placeholder="123456"
-                className="w-full border rounded p-3 mt-1 text-center tracking-widest text-xl font-bold focus:ring-2 focus:ring-blue-500 outline-none text-gray-800"
+                className="w-full border border-gray-300 rounded-lg p-3 text-center tracking-widest text-xl font-bold focus:ring-2 focus:ring-blue-500 outline-none text-gray-800"
               />
             </div>
 
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-green-600 text-white font-bold py-2.5 rounded-lg hover:bg-green-700 transition cursor-pointer"
+              className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded-lg shadow-md transition disabled:opacity-50 cursor-pointer block text-center"
             >
               {loading ? 'वेरीफाई हो रहा है...' : 'Verify OTP'}
             </button>
@@ -181,12 +187,12 @@ export default function EmployerSignup() {
               onClick={() => setStep('email')}
               className="w-full text-sm text-gray-500 hover:underline text-center block pt-2"
             >
-              ← ईमेल बदलें
+              ← दूसरी ईमेल दर्ज करें
             </button>
           </form>
         )}
 
-        {/* STEP 3: Rest of Form after OTP Success */}
+        {/* STEP 3: Details & Password */}
         {step === 'details' && (
           <form onSubmit={handleCompleteRegistration} className="space-y-4">
             <div className="bg-green-50 p-2.5 rounded-lg text-xs text-green-800 border border-green-200 text-center font-medium">
@@ -194,7 +200,7 @@ export default function EmployerSignup() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700">
+              <label className="block text-sm font-semibold text-gray-700 mb-1">
                 कंपनी / दुकान का नाम (Company Name) *
               </label>
               <input
@@ -203,12 +209,12 @@ export default function EmployerSignup() {
                 value={companyName}
                 onChange={(e) => setCompanyName(e.target.value)}
                 placeholder="अपनी कंपनी का नाम यहाँ लिखें"
-                className="w-full border rounded p-2 mt-1 focus:ring-2 focus:ring-blue-500 outline-none text-gray-800"
+                className="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 outline-none text-gray-800"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700">
+              <label className="block text-sm font-semibold text-gray-700 mb-1">
                 मोबाइल नंबर (Mobile Number) *
               </label>
               <input
@@ -217,13 +223,13 @@ export default function EmployerSignup() {
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
                 placeholder="9876543210"
-                className="w-full border rounded p-2 mt-1 focus:ring-2 focus:ring-blue-500 outline-none text-gray-800"
+                className="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 outline-none text-gray-800"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700">
-                नया पासवर्ड बनाएं (Password) *
+              <label className="block text-sm font-semibold text-gray-700 mb-1">
+                पासवर्ड (Password) *
               </label>
               <input
                 type="password"
@@ -232,21 +238,21 @@ export default function EmployerSignup() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
-                className="w-full border rounded p-2 mt-1 focus:ring-2 focus:ring-blue-500 outline-none text-gray-800"
+                className="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 outline-none text-gray-800"
               />
             </div>
 
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-blue-600 text-white font-bold py-2.5 rounded-lg hover:bg-blue-700 transition cursor-pointer"
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg shadow-md transition disabled:opacity-50 cursor-pointer block text-center"
             >
               {loading ? 'अकाउंट बन रहा है...' : 'अकाउंट रजिस्टर करें (Complete)'}
             </button>
           </form>
         )}
 
-        <div className="text-center mt-4 text-sm text-gray-600">
+        <div className="text-center mt-6 text-sm text-gray-600">
           पहले से अकाउंट है?{' '}
           <Link href="/employer/login" className="text-blue-600 font-bold hover:underline">
             Login करें
