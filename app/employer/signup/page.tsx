@@ -15,7 +15,7 @@ export default function EmployerSignup() {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
-  // Step 1: Sign up user & Send OTP to Email
+  // Step 1: Request Signup & Send OTP
   const handleInitialSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -24,11 +24,18 @@ export default function EmployerSignup() {
       const { error } = await supabase.auth.signUp({
         email,
         password,
+        options: {
+          data: {
+            company_name: companyName,
+            phone: phone,
+          },
+        },
       });
 
       if (error) throw error;
 
-      alert('Verification OTP aapki email par bhej diya gaya hai. Kripya check karke enter karein.');
+      // Agar Supabase Email OTP mode par hai, toh user ko verify screen par bhej dein
+      alert('Verification OTP आपकी ईमेल पर भेज दिया गया है। कृपया दर्ज करें।');
       setStep('verify');
     } catch (err: any) {
       alert('Error: ' + err.message);
@@ -37,12 +44,13 @@ export default function EmployerSignup() {
     }
   };
 
-  // Step 2: Verify Email OTP & Save Employer Profile
+  // Step 2: Verify OTP and Save Profile
   const handleVerifyOtp = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
     try {
+      // Verify OTP with Supabase
       const { data, error } = await supabase.auth.verifyOtp({
         email,
         token: otp,
@@ -52,7 +60,7 @@ export default function EmployerSignup() {
       if (error) throw error;
 
       if (data.user) {
-        // Save profile after successful verification
+        // Save extra employer details into employer_profiles table
         const { error: profileError } = await supabase.from('employer_profiles').insert([
           {
             id: data.user.id,
@@ -64,11 +72,11 @@ export default function EmployerSignup() {
 
         if (profileError) throw profileError;
 
-        alert('🎉 Email verified aur account safaltapurvak ban gaya!');
+        alert('🎉 ईमेल वेरिफाई और अकाउंट सफलतापूर्वक बन गया!');
         router.push('/employer/dashboard');
       }
     } catch (err: any) {
-      alert('Invalid OTP ya Error: ' + err.message);
+      alert('Invalid OTP or Error: ' + err.message);
     } finally {
       setLoading(false);
     }
@@ -82,12 +90,11 @@ export default function EmployerSignup() {
             Hire<span className="text-[#ff6f00]">Here</span> Employer
           </h1>
           <p className="text-sm text-gray-500 mt-1">
-            {step === 'details' ? 'नया Employer Account बनाएं' : 'ईमेल ओटीपी वेरीफाई करें (Verify Email OTP)'}
+            {step === 'details' ? 'नया Employer Account बनाएं' : 'ईमेल ओटीपी वेरीफाई करें'}
           </p>
         </div>
 
         {step === 'details' ? (
-          /* FORM STEP 1: Details Entry */
           <form onSubmit={handleInitialSignup} className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700">
@@ -150,19 +157,18 @@ export default function EmployerSignup() {
               disabled={loading}
               className="w-full bg-blue-600 text-white font-bold py-2.5 rounded-lg hover:bg-blue-700 transition cursor-pointer"
             >
-              {loading ? 'OTP भेजा जा रहा है...' : 'OTP भेजें और आगे बढ़ें (Send OTP)'}
+              {loading ? 'OTP भेजा जा रहा है...' : 'OTP भेजें और आगे बढ़ें'}
             </button>
           </form>
         ) : (
-          /* FORM STEP 2: OTP Verification */
           <form onSubmit={handleVerifyOtp} className="space-y-4">
-            <div className="bg-blue-50 p-3 rounded-lg text-sm text-blue-800 border border-blue-200">
-              Humne aapke email <b>{email}</b> par verification OTP bhej diya hai. Kripya niche enter karein.
+            <div className="bg-blue-50 p-3 rounded-lg text-sm text-blue-800 mb-4">
+              हमने आपके ईमेल <b>{email}</b> पर 6 अंकों का OTP भेजा है। कृपया नीचे दर्ज करें।
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700">
-                Enter Email OTP *
+                Enter OTP *
               </label>
               <input
                 type="text"
@@ -180,15 +186,7 @@ export default function EmployerSignup() {
               disabled={loading}
               className="w-full bg-green-600 text-white font-bold py-2.5 rounded-lg hover:bg-green-700 transition cursor-pointer"
             >
-              {loading ? 'Verify ho raha hai...' : 'Verify OTP & Complete Registration'}
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setStep('details')}
-              className="w-full text-sm text-gray-500 hover:underline text-center block pt-2"
-            >
-              ← Email ya details badlein
+              {loading ? 'वेरीफाई हो रहा है...' : 'Verify OTP & Login'}
             </button>
           </form>
         )}
