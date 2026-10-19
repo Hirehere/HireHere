@@ -15,7 +15,7 @@ export default function EmployerSignup() {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
-  // STEP 1: Send OTP to Email using Auth SignUp Flow
+  // STEP 1: Send OTP to Email
   const handleSendOtp = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email) return;
@@ -24,17 +24,16 @@ export default function EmployerSignup() {
     try {
       const cleanEmail = email.trim().toLowerCase();
       
-      // Send OTP via Supabase signUp
-      const { error } = await supabase.auth.signUp({
+      const { error } = await supabase.auth.signInWithOtp({
         email: cleanEmail,
-        password: 'TempPassword123!', // Dummy password until Step 3
+        options: {
+          shouldCreateUser: true,
+        },
       });
 
-      if (error && !error.message.includes('already registered')) {
-        throw error;
-      }
+      if (error) throw error;
 
-      alert('Verification OTP aapki email par bhej diya gaya hai. Kripya enter karein.');
+      alert('Verification OTP आपकी ईमेल पर भेज दिया गया है। कृपया दर्ज करें।');
       setStep('otp');
     } catch (err: any) {
       alert('Error: ' + err.message);
@@ -53,29 +52,28 @@ export default function EmployerSignup() {
       const { data, error } = await supabase.auth.verifyOtp({
         email: email.trim().toLowerCase(),
         token: otp.trim(),
-        type: 'signup',
+        type: 'email',
       });
 
       if (error) throw error;
 
       if (data.session || data.user) {
-        alert('🎉 Email verify ho gaya! Ab baki details bharein.');
+        alert('🎉 ईमेल सफलतापूर्वक वेरीफाई हो गया! अब अपनी अन्य जानकारी दर्ज करें।');
         setStep('details');
       }
     } catch (err: any) {
-      alert('Invalid OTP ya Error: ' + err.message);
+      alert('Invalid OTP या Error: ' + err.message);
     } finally {
       setLoading(false);
     }
   };
 
-  // STEP 3: Complete Details & Set Final Password
+  // STEP 3: Save Password & Profile Details
   const handleCompleteRegistration = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
     try {
-      // Update actual password chosen by the user
       const { error: passwordError } = await supabase.auth.updateUser({
         password: password,
       });
@@ -86,7 +84,6 @@ export default function EmployerSignup() {
       const user = userData.user;
 
       if (user) {
-        // Insert profile details
         const { error: profileError } = await supabase.from('employer_profiles').upsert([
           {
             id: user.id,
@@ -98,7 +95,7 @@ export default function EmployerSignup() {
 
         if (profileError) throw profileError;
 
-        alert('🚀 Account safaltapurvak ban gaya hai!');
+        alert('🚀 अकाउंट सफलतापूर्वक बन गया है!');
         router.push('/employer/dashboard');
       }
     } catch (err: any) {
@@ -116,9 +113,9 @@ export default function EmployerSignup() {
             Hire<span className="text-[#ff6f00]">Here</span> Employer
           </h1>
           <p className="text-sm text-gray-500 mt-1">
-            {step === 'email' && 'Step 1: Email ID darj karein'}
-            {step === 'otp' && 'Step 2: Email OTP verify karein'}
-            {step === 'details' && 'Step 3: Company aur Password details bharein'}
+            {step === 'email' && 'स्टेप 1: ईमेल आईडी दर्ज करें'}
+            {step === 'otp' && 'स्टेप 2: ईमेल ओटीपी वेरीफाई करें'}
+            {step === 'details' && 'स्टेप 3: कंपनी और पासवर्ड विवरण भरें'}
           </p>
         </div>
 
@@ -127,7 +124,7 @@ export default function EmployerSignup() {
           <form onSubmit={handleSendOtp} className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700">
-                Email Address *
+                ईमेल आईडी (Email Address) *
               </label>
               <input
                 type="email"
@@ -144,7 +141,7 @@ export default function EmployerSignup() {
               disabled={loading}
               className="w-full bg-blue-600 text-white font-bold py-2.5 rounded-lg hover:bg-blue-700 transition cursor-pointer"
             >
-              {loading ? 'OTP bheja ja raha hai...' : 'OTP Bhejen'}
+              {loading ? 'OTP भेजा जा रहा है...' : 'OTP भेजें और आगे बढ़ें'}
             </button>
           </form>
         )}
@@ -153,7 +150,7 @@ export default function EmployerSignup() {
         {step === 'otp' && (
           <form onSubmit={handleVerifyOtp} className="space-y-4">
             <div className="bg-blue-50 p-3 rounded-lg text-sm text-blue-800 border border-blue-200">
-              Humne aapke email <b>{email}</b> par OTP bhej diya hai.
+              हमने आपके ईमेल <b>{email}</b> पर 6 अंकों का OTP भेजा है।
             </div>
 
             <div>
@@ -176,7 +173,7 @@ export default function EmployerSignup() {
               disabled={loading}
               className="w-full bg-green-600 text-white font-bold py-2.5 rounded-lg hover:bg-green-700 transition cursor-pointer"
             >
-              {loading ? 'Verify ho raha hai...' : 'Verify OTP'}
+              {loading ? 'वेरीफाई हो रहा है...' : 'Verify OTP'}
             </button>
 
             <button
@@ -184,12 +181,12 @@ export default function EmployerSignup() {
               onClick={() => setStep('email')}
               className="w-full text-sm text-gray-500 hover:underline text-center block pt-2"
             >
-              ← Email ID badlein
+              ← ईमेल बदलें
             </button>
           </form>
         )}
 
-        {/* STEP 3: Remaining Form after OTP Success */}
+        {/* STEP 3: Rest of Form after OTP Success */}
         {step === 'details' && (
           <form onSubmit={handleCompleteRegistration} className="space-y-4">
             <div className="bg-green-50 p-2.5 rounded-lg text-xs text-green-800 border border-green-200 text-center font-medium">
@@ -198,21 +195,21 @@ export default function EmployerSignup() {
 
             <div>
               <label className="block text-sm font-medium text-gray-700">
-                Company Name *
+                कंपनी / दुकान का नाम (Company Name) *
               </label>
               <input
                 type="text"
                 required
                 value={companyName}
                 onChange={(e) => setCompanyName(e.target.value)}
-                placeholder="Apni company ka naam likhein"
+                placeholder="अपनी कंपनी का नाम यहाँ लिखें"
                 className="w-full border rounded p-2 mt-1 focus:ring-2 focus:ring-blue-500 outline-none text-gray-800"
               />
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700">
-                Mobile Number *
+                मोबाइल नंबर (Mobile Number) *
               </label>
               <input
                 type="tel"
@@ -226,7 +223,7 @@ export default function EmployerSignup() {
 
             <div>
               <label className="block text-sm font-medium text-gray-700">
-                Create Password *
+                नया पासवर्ड बनाएं (Password) *
               </label>
               <input
                 type="password"
@@ -244,15 +241,15 @@ export default function EmployerSignup() {
               disabled={loading}
               className="w-full bg-blue-600 text-white font-bold py-2.5 rounded-lg hover:bg-blue-700 transition cursor-pointer"
             >
-              {loading ? 'Account ban raha hai...' : 'Account Register Karein'}
+              {loading ? 'अकाउंट बन रहा है...' : 'अकाउंट रजिस्टर करें (Complete)'}
             </button>
           </form>
         )}
 
         <div className="text-center mt-4 text-sm text-gray-600">
-          Pehle se account hai?{' '}
+          पहले से अकाउंट है?{' '}
           <Link href="/employer/login" className="text-blue-600 font-bold hover:underline">
-            Login karein
+            Login करें
           </Link>
         </div>
       </div>
