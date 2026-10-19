@@ -15,7 +15,7 @@ export default function EmployerSignup() {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
-  // STEP 1: Send OTP to Email
+  // STEP 1: Send OTP to Email using Auth SignUp Flow
   const handleSendOtp = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email) return;
@@ -24,14 +24,15 @@ export default function EmployerSignup() {
     try {
       const cleanEmail = email.trim().toLowerCase();
       
-      const { error } = await supabase.auth.signInWithOtp({
+      // Send OTP via Supabase signUp
+      const { error } = await supabase.auth.signUp({
         email: cleanEmail,
-        options: {
-          shouldCreateUser: true,
-        },
+        password: 'TempPassword123!', // Dummy password until Step 3
       });
 
-      if (error) throw error;
+      if (error && !error.message.includes('already registered')) {
+        throw error;
+      }
 
       alert('Verification OTP aapki email par bhej diya gaya hai. Kripya enter karein.');
       setStep('otp');
@@ -52,13 +53,13 @@ export default function EmployerSignup() {
       const { data, error } = await supabase.auth.verifyOtp({
         email: email.trim().toLowerCase(),
         token: otp.trim(),
-        type: 'email',
+        type: 'signup',
       });
 
       if (error) throw error;
 
       if (data.session || data.user) {
-        alert('🎉 Email safaltapurvak verify ho gaya! Ab apni baaki details bharein.');
+        alert('🎉 Email verify ho gaya! Ab baki details bharein.');
         setStep('details');
       }
     } catch (err: any) {
@@ -68,12 +69,13 @@ export default function EmployerSignup() {
     }
   };
 
-  // STEP 3: Save Password & Employer Profile
+  // STEP 3: Complete Details & Set Final Password
   const handleCompleteRegistration = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
     try {
+      // Update actual password chosen by the user
       const { error: passwordError } = await supabase.auth.updateUser({
         password: password,
       });
@@ -84,6 +86,7 @@ export default function EmployerSignup() {
       const user = userData.user;
 
       if (user) {
+        // Insert profile details
         const { error: profileError } = await supabase.from('employer_profiles').upsert([
           {
             id: user.id,
@@ -119,7 +122,7 @@ export default function EmployerSignup() {
           </p>
         </div>
 
-        {/* STEP 1: Enter Email */}
+        {/* STEP 1: Enter Email Only */}
         {step === 'email' && (
           <form onSubmit={handleSendOtp} className="space-y-4">
             <div>
@@ -150,7 +153,7 @@ export default function EmployerSignup() {
         {step === 'otp' && (
           <form onSubmit={handleVerifyOtp} className="space-y-4">
             <div className="bg-blue-50 p-3 rounded-lg text-sm text-blue-800 border border-blue-200">
-              Humne aapke email <b>{email}</b> par 6 अंकों ka OTP bhej diya hai.
+              Humne aapke email <b>{email}</b> par OTP bhej diya hai.
             </div>
 
             <div>
@@ -181,12 +184,12 @@ export default function EmployerSignup() {
               onClick={() => setStep('email')}
               className="w-full text-sm text-gray-500 hover:underline text-center block pt-2"
             >
-              ← Dusri Email ID badlein
+              ← Email ID badlein
             </button>
           </form>
         )}
 
-        {/* STEP 3: Complete Details Form */}
+        {/* STEP 3: Remaining Form after OTP Success */}
         {step === 'details' && (
           <form onSubmit={handleCompleteRegistration} className="space-y-4">
             <div className="bg-green-50 p-2.5 rounded-lg text-xs text-green-800 border border-green-200 text-center font-medium">
