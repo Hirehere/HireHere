@@ -6,71 +6,96 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
 export default function ForgotPassword() {
-  const [step, setStep] = useState(1);
+  const [step, setStep] = useState<1 | 2 | 3>(1);
   const [email, setEmail] = useState('');
-  const [companyName, setCompanyName] = useState('');
-  const [phone, setPhone] = useState('');
+  const [otp, setOtp] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  
+
   const [errorMsg, setErrorMsg] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
-  const handleVerifyDetails = async (e: React.FormEvent) => {
+  // Step 1: Send OTP to Email
+  const handleSendOtp = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg('');
+    setSuccessMsg('');
     setLoading(true);
 
     const cleanEmail = email.trim().toLowerCase();
-    const cleanPhone = phone.trim().replace(/\D/g, '');
-    const inputFirstWord = companyName.trim().split(/\s+/)[0]?.toLowerCase() || '';
 
     try {
-      const { data: employer, error } = await supabase
+      // Check if employer profile exists
+      const { data: employer, error: fetchErr } = await supabase
         .from('employer_profiles')
-        .select('*')
+        .select('id')
         .eq('email', cleanEmail)
         .maybeSingle();
 
-      if (error || !employer) {
-        setErrorMsg('Yeh email ID registered nahi hai.');
+      if (fetchErr || !employer) {
+        setErrorMsg('यह ईमेल आईडी एम्प्लॉयर के रूप में रजिस्टर्ड नहीं है।');
         setLoading(false);
         return;
       }
 
-      const dbCompanyFull = String(employer.company_name || '').trim();
-      const dbFirstWord = dbCompanyFull.split(/\s+/)[0]?.toLowerCase() || '';
-      const dbPhone = String(employer.phone || '').trim().replace(/\D/g, '');
+      // Send Reset OTP Code via Supabase Auth
+      const { error: resetErr } = await supabase.auth.resetPasswordForEmail(cleanEmail);
 
-      if (dbFirstWord !== inputFirstWord || dbPhone !== cleanPhone) {
-        setErrorMsg('Company ka pehla naam ya mobile number is email ID se match nahi kar raha hai.');
-        setLoading(false);
-        return;
+      if (resetErr) {
+        setErrorMsg('OTP भेजने में समस्या आई: ' + resetErr.message);
+      } else {
+        setSuccessMsg(`आपके ईमेल ${cleanEmail} पर 6-अंकों का OTP भेज दिया गया है।`);
+        setStep(2);
       }
-
-      setStep(2);
-      setSuccessMsg('Pahchan safaltapoorvak verify ho gayi hai! Ab naya password set karein.');
     } catch (err: any) {
-      setErrorMsg('Kuch takniki samasya aayi hai.');
+      setErrorMsg('कुछ तकनीकी समस्या आई है। कृपया पुन: प्रयास करें।');
     } finally {
       setLoading(false);
     }
   };
 
+  // Step 2: Verify Email OTP
+  const handleVerifyOtp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setErrorMsg('');
+    setSuccessMsg('');
+    setLoading(true);
+
+    try {
+      const { data, error } = await supabase.auth.verifyOtp({
+        email: email.trim().toLowerCase(),
+        token: otp.trim(),
+        type: 'recovery',
+      });
+
+      if (error) {
+        setErrorMsg('अमान्य (Invalid) या अमान्य OTP कोड। कृपया पुनः प्रयास करें।');
+      } else if (data.session) {
+        setSuccessMsg('OTP सफलतापूर्वक वेरीफाई हो गया! अब अपना नया पासवर्ड सेट करें।');
+        setStep(3);
+      }
+    } catch (err: any) {
+      setErrorMsg('OTP वेरिफिकेशन के दौरान एरर आया।');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Step 3: Update New Password
   const handleUpdatePassword = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg('');
     setSuccessMsg('');
 
     if (newPassword.length < 6) {
-      setErrorMsg('Password kam se kam 6 aksharon ka hona chahiye.');
+      setErrorMsg('पासवर्ड कम से कम 6 अक्षरों का होना चाहिए।');
       return;
     }
 
     if (newPassword !== confirmPassword) {
-      setErrorMsg('Dono password match nahi kar rahe hain.');
+      setErrorMsg('दोनों पासवर्ड मैच नहीं कर रहे हैं।');
       return;
     }
 
@@ -82,15 +107,15 @@ export default function ForgotPassword() {
       });
 
       if (error) {
-        setErrorMsg(error.message || 'Password update karne me samasya aayi.');
+        setErrorMsg(error.message || 'पासवर्ड अपडेट करने में समस्या आई।');
       } else {
-        setSuccessMsg('🎉 Password safaltapoorvak badal diya gaya hai! Aapko login page par bheja ja raha hai...');
+        setSuccessMsg('🎉 पासवर्ड सफलतापूर्वक बदल दिया गया है! आपको लॉगिन पेज पर भेजा जा रहा है...');
         setTimeout(() => {
           router.push('/employer/login');
-        }, 2500);
+        }, 2000);
       }
     } catch (err: any) {
-      setErrorMsg('Password update karte samay error aayi.');
+      setErrorMsg('पासवर्ड सेव करते समय एरर आया।');
     } finally {
       setLoading(false);
     }
@@ -101,12 +126,14 @@ export default function ForgotPassword() {
       <div className="max-w-md w-full bg-white rounded-2xl shadow-xl p-8 border border-gray-100">
         <div className="text-center mb-6">
           <h1 className="text-2xl font-bold text-gray-800">
-            {step === 1 ? 'Password Reset - Verify Details' : 'Naya Password Banayein'}
+            {step === 1 && 'पासवर्ड रीसेट - OTP भेजें'}
+            {step === 2 && 'ईमेल OTP वेरीफाई करें'}
+            {step === 3 && 'नया पासवर्ड बनाएं'}
           </h1>
           <p className="text-gray-500 text-sm mt-1">
-            {step === 1 
-              ? 'Apni Company ka pehla naam, registered email aur mobile number darj karein.' 
-              : 'Apne khate ke liye naya password darj karein.'}
+            {step === 1 && 'अपनी रजिस्टर्ड ईमेल आईडी दर्ज करें जिस पर OTP भेजा जाएगा।'}
+            {step === 2 && 'आपकी ईमेल पर आया 6-अंकों का OTP कोड दर्ज करें।'}
+            {step === 3 && 'अपने एम्प्लॉयर अकाउंट के लिए नया पासवर्ड सेट करें।'}
           </p>
         </div>
 
@@ -122,41 +149,19 @@ export default function ForgotPassword() {
           </div>
         )}
 
-        {step === 1 ? (
-          <form onSubmit={handleVerifyDetails} className="space-y-4">
+        {/* STEP 1: Email Input */}
+        {step === 1 && (
+          <form onSubmit={handleSendOtp} className="space-y-4">
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1">Company First Name</label>
-              <input
-                type="text"
-                required
-                value={companyName}
-                onChange={(e) => setCompanyName(e.target.value)}
-                placeholder="Maswer"
-                className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-gray-800"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1">Registered Email ID</label>
+              <label className="block text-sm font-semibold text-gray-700 mb-1">
+                रजिस्टर्ड ईमेल आईडी (Registered Email) *
+              </label>
               <input
                 type="email"
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="hr@company.com"
-                className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-gray-800"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1">Registered Mobile Number</label>
-              <input
-                type="tel"
-                required
-                maxLength={15}
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                placeholder="8484817742"
+                placeholder="name@company.com"
                 className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-gray-800"
               />
             </div>
@@ -166,13 +171,52 @@ export default function ForgotPassword() {
               disabled={loading}
               className="w-full bg-blue-700 hover:bg-blue-800 text-white font-bold py-2.5 rounded-lg shadow transition disabled:opacity-50 cursor-pointer"
             >
-              {loading ? 'Janch ho rahi hai...' : 'Details Verify Karein'}
+              {loading ? 'OTP भेजा जा रहा है...' : 'OTP कोड भेजें'}
             </button>
           </form>
-        ) : (
+        )}
+
+        {/* STEP 2: OTP Entry */}
+        {step === 2 && (
+          <form onSubmit={handleVerifyOtp} className="space-y-4">
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-1">
+                Enter Email OTP *
+              </label>
+              <input
+                type="text"
+                required
+                maxLength={6}
+                value={otp}
+                onChange={(e) => setOtp(e.target.value)}
+                placeholder="123456"
+                className="w-full px-4 py-3 border rounded-lg text-center tracking-widest text-xl font-bold focus:ring-2 focus:ring-blue-500 outline-none text-gray-800"
+              />
+            </div>
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2.5 rounded-lg shadow transition disabled:opacity-50 cursor-pointer"
+            >
+              {loading ? 'जांच हो रही है...' : 'OTP वेरीफाई करें'}
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setStep(1)}
+              className="w-full text-sm text-gray-500 hover:underline text-center block pt-1"
+            >
+              ← ईमेल बदलें
+            </button>
+          </form>
+        )}
+
+        {/* STEP 3: Password Reset */}
+        {step === 3 && (
           <form onSubmit={handleUpdatePassword} className="space-y-4">
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1">Naya Password</label>
+              <label className="block text-sm font-semibold text-gray-700 mb-1">नया पासवर्ड</label>
               <input
                 type="password"
                 required
@@ -200,14 +244,14 @@ export default function ForgotPassword() {
               disabled={loading}
               className="w-full bg-blue-700 hover:bg-blue-800 text-white font-bold py-2.5 rounded-lg shadow transition disabled:opacity-50 cursor-pointer"
             >
-              {loading ? 'Save ho raha hai...' : 'Naya Password Save Karein'}
+              {loading ? 'Save हो रहा है...' : 'नया पासवर्ड Save करें'}
             </button>
           </form>
         )}
 
         <div className="mt-6 text-center text-sm">
           <Link href="/employer/login" className="text-blue-600 font-bold hover:underline">
-            ← Login Page par wapas jayein
+            ← Login Page पर वापस जाएं
           </Link>
         </div>
       </div>
