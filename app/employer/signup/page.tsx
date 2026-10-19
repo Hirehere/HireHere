@@ -6,36 +6,36 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
 export default function EmployerSignup() {
-  const [step, setStep] = useState<'details' | 'verify'>('details');
-  const [companyName, setCompanyName] = useState('');
+  const [step, setStep] = useState<'email' | 'otp' | 'details'>('email');
   const [email, setEmail] = useState('');
+  const [otp, setOtp] = useState('');
+  const [companyName, setCompanyName] = useState('');
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
-  const [otp, setOtp] = useState('');
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
-  // Step 1: Request Signup & Send OTP to Email (Saving metadata for trigger)
-  const handleInitialSignup = async (e: React.FormEvent) => {
+  // STEP 1: Send OTP to Email
+  const handleSendOtp = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!email) return;
     setLoading(true);
 
     try {
-      const { error } = await supabase.auth.signUp({
-        email,
-        password,
+      const cleanEmail = email.trim().toLowerCase();
+      
+      // Use signUp with dummy password temporarily or Supabase OTP signin method
+      const { error } = await supabase.auth.signInWithOtp({
+        email: cleanEmail,
         options: {
-          data: {
-            company_name: companyName,
-            phone: phone,
-          },
+          shouldCreateUser: true,
         },
       });
 
       if (error) throw error;
 
-      alert('Verification OTP aapki email par bhej diya gaya hai. Kripya enter karein.');
-      setStep('verify');
+      alert('Verification OTP आपकी ईमेल पर भेज दिया गया है। कृपया दर्ज करें।');
+      setStep('otp');
     } catch (err: any) {
       alert('Error: ' + err.message);
     } finally {
@@ -43,36 +43,67 @@ export default function EmployerSignup() {
     }
   };
 
-  // Step 2: Verify Email OTP and Redirect
+  // STEP 2: Verify OTP
   const handleVerifyOtp = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!otp) return;
     setLoading(true);
 
     try {
       const { data, error } = await supabase.auth.verifyOtp({
-        email,
-        token: otp,
-        type: 'signup',
+        email: email.trim().toLowerCase(),
+        token: otp.trim(),
+        type: 'email',
       });
 
       if (error) throw error;
 
-      if (data.user) {
-        // Fallback safety insert in case trigger takes a moment
-        await supabase.from('employer_profiles').upsert([
+      if (data.session || data.user) {
+        alert('🎉 ईमेल सफलतापूर्वक वेरीफाई हो गया! अब अपनी अन्य जानकारी दर्ज करें।');
+        setStep('details');
+      }
+    } catch (err: any) {
+      alert('अमान्य (Invalid) OTP या एरर: ' + err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // STEP 3: Complete Registration (Save Password & Profile Details)
+  const handleCompleteRegistration = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      // Update password for the verified user session
+      const { error: passwordError } = await supabase.auth.updateUser({
+        password: password,
+      });
+
+      if (passwordError) throw passwordError;
+
+      // Get current authenticated user id
+      const { data: userData } = await supabase.auth.getUser();
+      const user = userData.user;
+
+      if (user) {
+        // Insert employer details into employer_profiles table
+        const { error: profileError } = await supabase.from('employer_profiles').upsert([
           {
-            id: data.user.id,
+            id: user.id,
             company_name: companyName,
-            email: email,
+            email: email.trim().toLowerCase(),
             phone: phone,
           },
         ], { onConflict: 'id' });
 
-        alert('🎉 Email verify ho gaya aur account safaltapurvak ban gaya!');
+        if (profileError) throw profileError;
+
+        alert('🚀 अकाउंट सफलतापूर्वक बन गया है!');
         router.push('/employer/dashboard');
       }
     } catch (err: any) {
-      alert('Invalid OTP ya Error: ' + err.message);
+      alert('Registration Error: ' + err.message);
     } finally {
       setLoading(false);
     }
@@ -86,26 +117,15 @@ export default function EmployerSignup() {
             Hire<span className="text-[#ff6f00]">Here</span> Employer
           </h1>
           <p className="text-sm text-gray-500 mt-1">
-            {step === 'details' ? 'नया Employer Account बनाएं' : 'ईमेल ओटीपी वेरीफाई करें'}
+            {step === 'email' && 'स्टेप 1: ईमेल आईडी दर्ज करें'}
+            {step === 'otp' && 'स्टेप 2: ईमेल ओटीपी वेरीफाई करें'}
+            {step === 'details' && 'स्टेप 3: कंपनी और पासवर्ड विवरण भरें'}
           </p>
         </div>
 
-        {step === 'details' ? (
-          <form onSubmit={handleInitialSignup} className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700">
-                कंपनी / दुकान का नाम (Company Name) *
-              </label>
-              <input
-                type="text"
-                required
-                value={companyName}
-                onChange={(e) => setCompanyName(e.target.value)}
-                placeholder="अपनी कंपनी का नाम यहाँ लिखें"
-                className="w-full border rounded p-2 mt-1 focus:ring-2 focus:ring-blue-500 outline-none text-gray-800"
-              />
-            </div>
-
+        {/* SUB-VIEW 1: Enter Email */}
+        {step === 'email' && (
+          <form onSubmit={handleSendOtp} className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700">
                 ईमेल आईडी (Email Address) *
@@ -116,35 +136,7 @@ export default function EmployerSignup() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="name@company.com"
-                className="w-full border rounded p-2 mt-1 focus:ring-2 focus:ring-blue-500 outline-none text-gray-800"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700">
-                मोबाइल नंबर (Mobile Number) *
-              </label>
-              <input
-                type="tel"
-                required
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                placeholder="9876543210"
-                className="w-full border rounded p-2 mt-1 focus:ring-2 focus:ring-blue-500 outline-none text-gray-800"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700">
-                पासवर्ड (Password) *
-              </label>
-              <input
-                type="password"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
-                className="w-full border rounded p-2 mt-1 focus:ring-2 focus:ring-blue-500 outline-none text-gray-800"
+                className="w-full border rounded p-2.5 mt-1 focus:ring-2 focus:ring-blue-500 outline-none text-gray-800"
               />
             </div>
 
@@ -153,13 +145,16 @@ export default function EmployerSignup() {
               disabled={loading}
               className="w-full bg-blue-600 text-white font-bold py-2.5 rounded-lg hover:bg-blue-700 transition cursor-pointer"
             >
-              {loading ? 'OTP भेजा जा रहा है...' : 'OTP भेजें और आगे बढ़ें'}
+              {loading ? 'OTP भेजा जा रहा है...' : 'OTP भेजें'}
             </button>
           </form>
-        ) : (
+        )}
+
+        {/* SUB-VIEW 2: Enter OTP */}
+        {step === 'otp' && (
           <form onSubmit={handleVerifyOtp} className="space-y-4">
             <div className="bg-blue-50 p-3 rounded-lg text-sm text-blue-800 border border-blue-200">
-              Humne aapke email <b>{email}</b> par verification OTP bhej diya hai. Kripya niche enter karein.
+              हमने आपके ईमेल <b>{email}</b> पर 6 अंकों का OTP भेजा है।
             </div>
 
             <div>
@@ -182,15 +177,75 @@ export default function EmployerSignup() {
               disabled={loading}
               className="w-full bg-green-600 text-white font-bold py-2.5 rounded-lg hover:bg-green-700 transition cursor-pointer"
             >
-              {loading ? 'Verify हो रहा है...' : 'Verify OTP & Complete Registration'}
+              {loading ? 'वेरीफाई हो रहा है...' : 'Verify OTP'}
             </button>
 
             <button
               type="button"
-              onClick={() => setStep('details')}
+              onClick={() => setStep('email')}
               className="w-full text-sm text-gray-500 hover:underline text-center block pt-2"
             >
-              ← Email या details बदलें
+              ← दूसरी ईमेल आईडी बदलें
+            </button>
+          </form>
+        )}
+
+        {/* SUB-VIEW 3: Details & Password Form */}
+        {step === 'details' && (
+          <form onSubmit={handleCompleteRegistration} className="space-y-4">
+            <div className="bg-green-50 p-2.5 rounded-lg text-xs text-green-800 border border-green-200 text-center font-medium">
+              ✓ Email Verified: {email}
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700">
+                कंपनी / दुकान का नाम (Company Name) *
+              </label>
+              <input
+                type="text"
+                required
+                value={companyName}
+                onChange={(e) => setCompanyName(e.target.value)}
+                placeholder="अपनी कंपनी का नाम यहाँ लिखें"
+                className="w-full border rounded p-2 mt-1 focus:ring-2 focus:ring-blue-500 outline-none text-gray-800"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700">
+                मोबाइल नंबर (Mobile Number) *
+              </label>
+              <input
+                type="tel"
+                required
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                placeholder="9876543210"
+                className="w-full border rounded p-2 mt-1 focus:ring-2 focus:ring-blue-500 outline-none text-gray-800"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700">
+                नया पासवर्ड बनाएं (Password) *
+              </label>
+              <input
+                type="password"
+                required
+                minLength={6}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••"
+                className="w-full border rounded p-2 mt-1 focus:ring-2 focus:ring-blue-500 outline-none text-gray-800"
+              />
+            </div>
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full bg-blue-600 text-white font-bold py-2.5 rounded-lg hover:bg-blue-700 transition cursor-pointer"
+            >
+              {loading ? 'अकाउंट बन रहा है...' : 'अकाउंट रजिस्टर करें (Complete)'}
             </button>
           </form>
         )}
