@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { createClient } from "@supabase/supabase-js";
 import Link from "next/link";
-import { useRouter } from "next/navigation"; // Added router for redirection
+import { useRouter } from "next/navigation";
 
 // Safe Supabase Client Initialization (Prevents Prerender Build Errors)
 const supabaseUrl =
@@ -44,6 +44,8 @@ type TranslationType = {
   alreadyRegisteredErr: string;
   successMsg: string;
   qualifications: { value: string; label: string }[];
+  itiTrades: string[];
+  diplomaCourses: string[];
   graduateDegrees: string[];
   postGraduateDegrees: string[];
   experiences: { value: string; label: string }[];
@@ -70,7 +72,7 @@ const TRANSLATIONS: Record<"hi" | "en", TranslationType> = {
     customDesignationLabel: "अपना पद/रोल टाइप करें",
     customDesignationPlaceholder: "उदा. Accountant, Cook, Welder",
     qualification: "शैक्षणिक योग्यता",
-    specializationLabel: "स्पेशलाइजेशन / डिग्री चुनें",
+    specializationLabel: "ट्रेड / स्पेशलाइजेशन चुनें",
     experience: "अनुभव",
     noticePeriod: "नोटिस पीरियड",
     expectedSalary: "अपेक्षित वेतन (प्रति माह)",
@@ -84,9 +86,38 @@ const TRANSLATIONS: Record<"hi" | "en", TranslationType> = {
       { value: "Below 10th", label: "10th से कम" },
       { value: "10th Pass", label: "10th पास" },
       { value: "12th Pass", label: "12th पास" },
-      { value: "ITI / Diploma", label: "ITI / डिप्लोमा" },
+      { value: "ITI", label: "ITI" },
+      { value: "Diploma", label: "Diploma" },
       { value: "Graduate", label: "ग्रेजुएट (Graduate)" },
       { value: "Post Graduate", label: "पोस्ट ग्रेजुएट (Post Graduate)" },
+    ],
+    itiTrades: [
+      "Electrician",
+      "Fitter",
+      "Welder",
+      "Diesel Mechanic",
+      "Turner",
+      "Machinist",
+      "Electronic Mechanic",
+      "COPA (Computer Operator)",
+      "Wireman",
+      "Motor Mechanic Vehicle (MMV)",
+      "Draughtsman (Mechanical/Civil)",
+      "Refrigeration and Air Conditioning (RAC)",
+      "Other ITI Trade"
+    ],
+    diplomaCourses: [
+      "Mechanical Engineering",
+      "Electrical Engineering",
+      "Civil Engineering",
+      "Electronics & Telecommunication",
+      "Computer Science & Engineering",
+      "Automobile Engineering",
+      "Information Technology (IT)",
+      "Electrical & Electronics",
+      "Chemical Engineering",
+      "Production Engineering",
+      "Other Diploma Course"
     ],
     graduateDegrees: [
       "BA (Bachelor of Arts)",
@@ -187,7 +218,7 @@ const TRANSLATIONS: Record<"hi" | "en", TranslationType> = {
     customDesignationLabel: "Type your Designation / Role",
     customDesignationPlaceholder: "e.g. Accountant, Cook, Welder",
     qualification: "Qualification",
-    specializationLabel: "Select Specialization / Degree",
+    specializationLabel: "Select Trade / Specialization",
     experience: "Experience",
     noticePeriod: "Notice Period",
     expectedSalary: "Expected Salary (Per Month)",
@@ -201,9 +232,38 @@ const TRANSLATIONS: Record<"hi" | "en", TranslationType> = {
       { value: "Below 10th", label: "Below 10th" },
       { value: "10th Pass", label: "10th Pass" },
       { value: "12th Pass", label: "12th Pass" },
-      { value: "ITI / Diploma", label: "ITI / Diploma" },
+      { value: "ITI", label: "ITI" },
+      { value: "Diploma", label: "Diploma" },
       { value: "Graduate", label: "Graduate" },
       { value: "Post Graduate", label: "Post Graduate" },
+    ],
+    itiTrades: [
+      "Electrician",
+      "Fitter",
+      "Welder",
+      "Diesel Mechanic",
+      "Turner",
+      "Machinist",
+      "Electronic Mechanic",
+      "COPA (Computer Operator)",
+      "Wireman",
+      "Motor Mechanic Vehicle (MMV)",
+      "Draughtsman (Mechanical/Civil)",
+      "Refrigeration and Air Conditioning (RAC)",
+      "Other ITI Trade"
+    ],
+    diplomaCourses: [
+      "Mechanical Engineering",
+      "Electrical Engineering",
+      "Civil Engineering",
+      "Electronics & Telecommunication",
+      "Computer Science & Engineering",
+      "Automobile Engineering",
+      "Information Technology (IT)",
+      "Electrical & Electronics",
+      "Chemical Engineering",
+      "Production Engineering",
+      "Other Diploma Course"
     ],
     graduateDegrees: [
       "BA (Bachelor of Arts)",
@@ -401,9 +461,15 @@ export default function EmployeeRegister() {
       const isOtherCat = selectedCategory === "अन्य" || selectedCategory === "Other";
       const finalDesignation = isOtherCat && customDesignation.trim() ? customDesignation.trim() : formData.designation;
 
-      // Final qualification string with specialization if Graduate or Post Graduate
+      // Final qualification string with specialization if ITI, Diploma, Graduate or Post Graduate
       let finalQualification = formData.qualification;
-      if ((formData.qualification === "Graduate" || formData.qualification === "Post Graduate") && specialization.trim()) {
+      if (
+        (formData.qualification === "ITI" || 
+         formData.qualification === "Diploma" || 
+         formData.qualification === "Graduate" || 
+         formData.qualification === "Post Graduate") && 
+        specialization.trim()
+      ) {
         finalQualification = `${formData.qualification} (${specialization.trim()})`;
       }
 
@@ -597,6 +663,46 @@ export default function EmployeeRegister() {
                 ))}
               </select>
             </div>
+
+            {/* Specialization Dropdown if ITI is selected */}
+            {formData.qualification === "ITI" && (
+              <div>
+                <label className="block text-sm font-semibold text-slate-700 mb-1">
+                  {t.specializationLabel} *
+                </label>
+                <select
+                  required
+                  className="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white text-slate-800"
+                  value={specialization}
+                  onChange={(e) => setSpecialization(e.target.value)}
+                >
+                  <option value="">-- अपनी ITI Trade चुनें --</option>
+                  {t.itiTrades.map((trade) => (
+                    <option key={trade} value={trade}>{trade}</option>
+                  ))}
+                </select>
+              </div>
+            )}
+
+            {/* Specialization Dropdown if Diploma is selected */}
+            {formData.qualification === "Diploma" && (
+              <div>
+                <label className="block text-sm font-semibold text-slate-700 mb-1">
+                  {t.specializationLabel} *
+                </label>
+                <select
+                  required
+                  className="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white text-slate-800"
+                  value={specialization}
+                  onChange={(e) => setSpecialization(e.target.value)}
+                >
+                  <option value="">-- अपना Diploma कोर्स चुनें --</option>
+                  {t.diplomaCourses.map((course) => (
+                    <option key={course} value={course}>{course}</option>
+                  ))}
+                </select>
+              </div>
+            )}
 
             {/* Specialization Dropdown if Graduate is selected */}
             {formData.qualification === "Graduate" && (
