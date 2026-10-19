@@ -85,7 +85,7 @@ export default function EmployerSignup() {
               required
               value={companyName}
               onChange={(e) => setCompanyName(e.target.value)}
-              placeholder="Maswer Automotive"
+              placeholder="Company Name"
               className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-gray-800"
             />
           </div>
@@ -110,7 +110,7 @@ export default function EmployerSignup() {
               maxLength={15}
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
-              placeholder="8484817742"
+              placeholder="9876543210"
               className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-gray-800"
             />
           </div>
