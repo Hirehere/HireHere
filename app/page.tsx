@@ -285,6 +285,15 @@ export default function JobPortal() {
       setIsMuted(videoRef.current.muted);
     }
   };
+  const [isMuted2, setIsMuted2] = useState(true);
+const videoRef2 = useRef<HTMLVideoElement | null>(null);
+
+const toggleMute2 = () => {
+  if (videoRef2.current) {
+    videoRef2.current.muted = !videoRef2.current.muted;
+    setIsMuted2(videoRef2.current.muted);
+  }
+};
 
   return (
     <div className="w-full min-h-screen bg-[#f8fafc] font-sans pb-20 text-[#1a1a1a]">
@@ -606,7 +615,6 @@ export default function JobPortal() {
         </div>
      </section>
     {/* ===== 10-SECOND SHORT VIDEO SECTION (NEWS SECTION KE THEEK NICHE) ===== */}
-{/* ===== 10-SECOND SHORT VIDEO SECTION ===== */}
 <section className="w-full px-6 py-6 flex flex-col items-center justify-center">
   <div className="text-center mb-6">
     <h3 className="text-lg md:text-xl font-black text-[#0d47a1]">
@@ -635,7 +643,7 @@ export default function JobPortal() {
         onClick={toggleMute}
         className="absolute bottom-3 right-3 bg-black/80 hover:bg-black text-white text-xs font-bold px-3 py-1.5 rounded-full backdrop-blur-md transition border border-white/40 cursor-pointer shadow-md"
       >
-        {isMuted ? '🔇 Unmute' : '🔊 Mute'}
+        {isMuted ? '🔇' : '🔊'}
       </button>
     </div>
 
@@ -655,12 +663,13 @@ export default function JobPortal() {
         onClick={toggleMute2}
         className="absolute bottom-3 right-3 bg-black/80 hover:bg-black text-white text-xs font-bold px-3 py-1.5 rounded-full backdrop-blur-md transition border border-white/40 cursor-pointer shadow-md"
       >
-        {isMuted2 ? '🔇 Unmute' : '🔊 Mute'}
+        {isMuted2 ? '🔇' : '🔊'}
       </button>
     </div>
 
   </div>
 </section>
+
       {/* FOOTER */}
       <footer className="w-full bg-[#0d47a1] text-white text-center py-10 px-6 mt-8">
         <div className="text-2xl font-black mb-1">
