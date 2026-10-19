@@ -14,7 +14,7 @@ export default function EmployerDashboard() {
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
-  // New Job Form State (Synced with DB columns)
+  // New Job Form State
   const [jobTitle, setJobTitle] = useState('');
   const [companyName, setCompanyName] = useState('');
   const [locationCity, setLocationCity] = useState('');
@@ -120,11 +120,13 @@ export default function EmployerDashboard() {
       return;
     }
 
+    const finalCompanyName = companyName.trim() || 'My Company';
+
     // Insert payload strictly matching Supabase `jobs` schema columns
     const { error } = await supabase.from('jobs').insert([
       {
         title: jobTitle,
-        company_name: companyName,
+        company_name: finalCompanyName,
         location_city: locationCity,
         salary: salary,
         category: finalCategory,
