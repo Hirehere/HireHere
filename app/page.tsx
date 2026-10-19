@@ -604,9 +604,8 @@ export default function JobPortal() {
             </div>
           </div>
         </div>
-      </section>
-
-      {/* ===== 10-SECOND SHORT VIDEO SECTION (NEWS SECTION KE THEEK NICHE) ===== */}
+     </section>
+    {/* ===== 10-SECOND SHORT VIDEO SECTION (NEWS SECTION KE THEEK NICHE) ===== */}
 <section className="w-full px-6 py-6 flex flex-col items-center justify-center">
   <div className="text-center mb-6">
     <h3 className="text-lg md:text-xl font-black text-[#0d47a1]">
@@ -652,6 +651,7 @@ export default function JobPortal() {
       />
     </div>
 
+  </div>
 </section>
       {/* FOOTER */}
       <footer className="w-full bg-[#0d47a1] text-white text-center py-10 px-6 mt-8">
