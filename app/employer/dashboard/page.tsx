@@ -21,6 +21,8 @@ export default function EmployerDashboard() {
   const [salary, setSalary] = useState('');
   const [category, setCategory] = useState('Driver');
   const [customCategory, setCustomCategory] = useState('');
+  const [hrCallNumber, setHrCallNumber] = useState('');
+  const [hrWhatsappNumber, setHrWhatsappNumber] = useState('');
   const [allowDirectCall, setAllowDirectCall] = useState(true);
 
   useEffect(() => {
@@ -40,6 +42,21 @@ export default function EmployerDashboard() {
   const fetchEmployerData = async (employerId: string) => {
     setLoading(true);
     try {
+      // Fetch Employer Profile to pre-fill Company Name & Phone Number
+      const { data: profile } = await supabase
+        .from('employer_profiles')
+        .select('*')
+        .eq('id', employerId)
+        .maybeSingle();
+
+      if (profile) {
+        if (profile.company_name) setCompanyName(profile.company_name);
+        if (profile.phone) {
+          setHrCallNumber(profile.phone);
+          setHrWhatsappNumber(profile.phone);
+        }
+      }
+
       // 1. Fetch Employer's Posted Jobs
       const { data: jobData } = await supabase
         .from('jobs')
@@ -103,14 +120,16 @@ export default function EmployerDashboard() {
       return;
     }
 
+    // Insert payload strictly matching Supabase `jobs` schema columns
     const { error } = await supabase.from('jobs').insert([
       {
         title: jobTitle,
         company_name: companyName,
-        company: companyName, // Fallback for schema safety
         location_city: locationCity,
-        salary,
+        salary: salary,
         category: finalCategory,
+        hr_call_number: hrCallNumber,
+        hr_whatsapp_number: hrWhatsappNumber,
         employer_id: user.id,
         allow_direct_call: allowDirectCall,
         is_verified: true,
@@ -118,9 +137,8 @@ export default function EmployerDashboard() {
     ]);
 
     if (!error) {
-      alert(lang === 'hi' ? 'जॉब सफलतापूर्वक पोस्ट हो गई!' : 'Job Posted Successfully!');
+      alert(lang === 'hi' ? '🎉 जॉब सफलतापूर्वक पोस्ट हो गई!' : '🎉 Job Posted Successfully!');
       setJobTitle('');
-      setCompanyName('');
       setLocationCity('');
       setSalary('');
       setCategory('Driver');
@@ -132,7 +150,7 @@ export default function EmployerDashboard() {
       alert('Error: ' + error.message);
     }
   };
-
+  
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-100">
@@ -417,6 +435,32 @@ export default function EmployerDashboard() {
                 />
               </div>
             )}
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Calling Number (कॉल करने का नंबर) *</label>
+              <input
+                type="tel"
+                required
+                maxLength={15}
+                value={hrCallNumber}
+                onChange={(e) => setHrCallNumber(e.target.value)}
+                placeholder="e.g. 9876543210"
+                className="w-full border rounded p-2 mt-1 focus:ring-2 focus:ring-blue-500 outline-none text-gray-800"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700">WhatsApp Number *</label>
+              <input
+                type="tel"
+                required
+                maxLength={15}
+                value={hrWhatsappNumber}
+                onChange={(e) => setHrWhatsappNumber(e.target.value)}
+                placeholder="e.g. 9876543210"
+                className="w-full border rounded p-2 mt-1 focus:ring-2 focus:ring-blue-500 outline-none text-gray-800"
+              />
+            </div>
 
             <div className="flex items-center gap-2 pt-2">
               <input
