@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
 export default function ForgotPassword() {
-  const [step, setStep] = useState<1 | 2 | 3>(1);
+  const [step, setStep] = useState<1 | 2 | 3>(1); // Step 1: Email, Step 2: OTP, Step 3: New Password
   const [email, setEmail] = useState('');
   const [otp, setOtp] = useState('');
   const [newPassword, setNewPassword] = useState('');
@@ -17,7 +17,7 @@ export default function ForgotPassword() {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
-  // Step 1: Send OTP to Email
+  // STEP 1: Send OTP to Email
   const handleSendOtp = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg('');
@@ -27,36 +27,36 @@ export default function ForgotPassword() {
     const cleanEmail = email.trim().toLowerCase();
 
     try {
-      // Check if employer profile exists
-      const { data: employer, error: fetchErr } = await supabase
+      // 1. Check if email exists in employer_profiles table
+      const { data: employer, error: checkError } = await supabase
         .from('employer_profiles')
         .select('id')
         .eq('email', cleanEmail)
         .maybeSingle();
 
-      if (fetchErr || !employer) {
-        setErrorMsg('यह ईमेल आईडी एम्प्लॉयर के रूप में रजिस्टर्ड नहीं है।');
+      if (checkError || !employer) {
+        setErrorMsg('Yeh Email ID registered nahi hai.');
         setLoading(false);
         return;
       }
 
-      // Send Reset OTP Code via Supabase Auth
-      const { error: resetErr } = await supabase.auth.resetPasswordForEmail(cleanEmail);
+      // 2. Request Password Reset OTP via Supabase Auth
+      const { error } = await supabase.auth.resetPasswordForEmail(cleanEmail);
 
-      if (resetErr) {
-        setErrorMsg('OTP भेजने में समस्या आई: ' + resetErr.message);
+      if (error) {
+        setErrorMsg(error.message || 'OTP bhejne me samasya aayi.');
       } else {
-        setSuccessMsg(`आपके ईमेल ${cleanEmail} पर 6-अंकों का OTP भेज दिया गया है।`);
+        setSuccessMsg(`OTP aapke email (${cleanEmail}) par bhej diya gaya hai!`);
         setStep(2);
       }
     } catch (err: any) {
-      setErrorMsg('कुछ तकनीकी समस्या आई है। कृपया पुन: प्रयास करें।');
+      setErrorMsg('Kuch takniki samasya aayi hai.');
     } finally {
       setLoading(false);
     }
   };
 
-  // Step 2: Verify Email OTP
+  // STEP 2: Verify OTP
   const handleVerifyOtp = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg('');
@@ -70,32 +70,32 @@ export default function ForgotPassword() {
         type: 'recovery',
       });
 
-      if (error) {
-        setErrorMsg('अमान्य (Invalid) या अमान्य OTP कोड। कृपया पुनः प्रयास करें।');
-      } else if (data.session) {
-        setSuccessMsg('OTP सफलतापूर्वक वेरीफाई हो गया! अब अपना नया पासवर्ड सेट करें।');
+      if (error || !data.session) {
+        setErrorMsg('Galat ya expired OTP hai. Kripya firse check karein.');
+      } else {
+        setSuccessMsg('OTP safaltapoorvak verify ho gaya! Ab naya password set karein.');
         setStep(3);
       }
     } catch (err: any) {
-      setErrorMsg('OTP वेरिफिकेशन के दौरान एरर आया।');
+      setErrorMsg('OTP verification me error aayi.');
     } finally {
       setLoading(false);
     }
   };
 
-  // Step 3: Update New Password
+  // STEP 3: Save New Password
   const handleUpdatePassword = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg('');
     setSuccessMsg('');
 
     if (newPassword.length < 6) {
-      setErrorMsg('पासवर्ड कम से कम 6 अक्षरों का होना चाहिए।');
+      setErrorMsg('Password kam se kam 6 aksharon ka hona chahiye.');
       return;
     }
 
     if (newPassword !== confirmPassword) {
-      setErrorMsg('दोनों पासवर्ड मैच नहीं कर रहे हैं।');
+      setErrorMsg('Dono password match nahi kar rahe hain.');
       return;
     }
 
@@ -107,15 +107,15 @@ export default function ForgotPassword() {
       });
 
       if (error) {
-        setErrorMsg(error.message || 'पासवर्ड अपडेट करने में समस्या आई।');
+        setErrorMsg(error.message || 'Password update karne me samasya aayi.');
       } else {
-        setSuccessMsg('🎉 पासवर्ड सफलतापूर्वक बदल दिया गया है! आपको लॉगिन पेज पर भेजा जा रहा है...');
+        setSuccessMsg('🎉 Password safaltapoorvak badal diya gaya hai! Aapko login page par bheja ja raha hai...');
         setTimeout(() => {
           router.push('/employer/login');
-        }, 2000);
+        }, 2500);
       }
     } catch (err: any) {
-      setErrorMsg('पासवर्ड सेव करते समय एरर आया।');
+      setErrorMsg('Password update karte samay error aayi.');
     } finally {
       setLoading(false);
     }
@@ -126,14 +126,14 @@ export default function ForgotPassword() {
       <div className="max-w-md w-full bg-white rounded-2xl shadow-xl p-8 border border-gray-100">
         <div className="text-center mb-6">
           <h1 className="text-2xl font-bold text-gray-800">
-            {step === 1 && 'पासवर्ड रीसेट - OTP भेजें'}
-            {step === 2 && 'ईमेल OTP वेरीफाई करें'}
-            {step === 3 && 'नया पासवर्ड बनाएं'}
+            {step === 1 && 'Forgot Password'}
+            {step === 2 && 'Verify Email OTP'}
+            {step === 3 && 'Naya Password Banayein'}
           </h1>
           <p className="text-gray-500 text-sm mt-1">
-            {step === 1 && 'अपनी रजिस्टर्ड ईमेल आईडी दर्ज करें जिस पर OTP भेजा जाएगा।'}
-            {step === 2 && 'आपकी ईमेल पर आया 6-अंकों का OTP कोड दर्ज करें।'}
-            {step === 3 && 'अपने एम्प्लॉयर अकाउंट के लिए नया पासवर्ड सेट करें।'}
+            {step === 1 && 'Apni registered Email ID darj karein, OTP bhejenge.'}
+            {step === 2 && 'Email par aaya 6-digit OTP code yahan darj karein.'}
+            {step === 3 && 'Apne account ke liye naya password set karein.'}
           </p>
         </div>
 
@@ -149,12 +149,12 @@ export default function ForgotPassword() {
           </div>
         )}
 
-        {/* STEP 1: Email Input */}
+        {/* STEP 1: Enter Email */}
         {step === 1 && (
           <form onSubmit={handleSendOtp} className="space-y-4">
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-1">
-                रजिस्टर्ड ईमेल आईडी (Registered Email) *
+                Registered Email ID *
               </label>
               <input
                 type="email"
@@ -171,17 +171,17 @@ export default function ForgotPassword() {
               disabled={loading}
               className="w-full bg-blue-700 hover:bg-blue-800 text-white font-bold py-2.5 rounded-lg shadow transition disabled:opacity-50 cursor-pointer"
             >
-              {loading ? 'OTP भेजा जा रहा है...' : 'OTP कोड भेजें'}
+              {loading ? 'OTP Bheja ja raha hai...' : 'OTP Bhejen'}
             </button>
           </form>
         )}
 
-        {/* STEP 2: OTP Entry */}
+        {/* STEP 2: Enter OTP */}
         {step === 2 && (
           <form onSubmit={handleVerifyOtp} className="space-y-4">
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-1">
-                Enter Email OTP *
+                Enter 6-Digit OTP *
               </label>
               <input
                 type="text"
@@ -190,7 +190,7 @@ export default function ForgotPassword() {
                 value={otp}
                 onChange={(e) => setOtp(e.target.value)}
                 placeholder="123456"
-                className="w-full px-4 py-3 border rounded-lg text-center tracking-widest text-xl font-bold focus:ring-2 focus:ring-blue-500 outline-none text-gray-800"
+                className="w-full px-4 py-2.5 border rounded-lg text-center tracking-widest text-xl font-bold focus:ring-2 focus:ring-blue-500 outline-none text-gray-800"
               />
             </div>
 
@@ -199,24 +199,30 @@ export default function ForgotPassword() {
               disabled={loading}
               className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2.5 rounded-lg shadow transition disabled:opacity-50 cursor-pointer"
             >
-              {loading ? 'जांच हो रही है...' : 'OTP वेरीफाई करें'}
+              {loading ? 'Verify ho raha hai...' : 'Verify OTP'}
             </button>
 
             <button
               type="button"
-              onClick={() => setStep(1)}
+              onClick={() => {
+                setStep(1);
+                setErrorMsg('');
+                setSuccessMsg('');
+              }}
               className="w-full text-sm text-gray-500 hover:underline text-center block pt-1"
             >
-              ← ईमेल बदलें
+              ← Email ID badlein
             </button>
           </form>
         )}
 
-        {/* STEP 3: Password Reset */}
+        {/* STEP 3: Create New Password */}
         {step === 3 && (
           <form onSubmit={handleUpdatePassword} className="space-y-4">
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1">नया पासवर्ड</label>
+              <label className="block text-sm font-semibold text-gray-700 mb-1">
+                Naya Password *
+              </label>
               <input
                 type="password"
                 required
@@ -228,7 +234,9 @@ export default function ForgotPassword() {
             </div>
 
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1">Confirm Password</label>
+              <label className="block text-sm font-semibold text-gray-700 mb-1">
+                Confirm Naya Password *
+              </label>
               <input
                 type="password"
                 required
@@ -244,14 +252,14 @@ export default function ForgotPassword() {
               disabled={loading}
               className="w-full bg-blue-700 hover:bg-blue-800 text-white font-bold py-2.5 rounded-lg shadow transition disabled:opacity-50 cursor-pointer"
             >
-              {loading ? 'Save हो रहा है...' : 'नया पासवर्ड Save करें'}
+              {loading ? 'Save ho raha hai...' : 'Naya Password Save Karein'}
             </button>
           </form>
         )}
 
         <div className="mt-6 text-center text-sm">
           <Link href="/employer/login" className="text-blue-600 font-bold hover:underline">
-            ← Login Page पर वापस जाएं
+            ← Login Page par wapas jayein
           </Link>
         </div>
       </div>
