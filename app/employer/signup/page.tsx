@@ -15,7 +15,7 @@ export default function EmployerSignup() {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
-  // Step 1: Request Signup & Send OTP to Email
+  // Step 1: Request Signup & Send OTP to Email (Saving metadata for trigger)
   const handleInitialSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -43,13 +43,12 @@ export default function EmployerSignup() {
     }
   };
 
-  // Step 2: Verify Email OTP and Save Profile
+  // Step 2: Verify Email OTP and Redirect
   const handleVerifyOtp = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
     try {
-      // Verify OTP via Supabase Auth
       const { data, error } = await supabase.auth.verifyOtp({
         email,
         token: otp,
@@ -59,20 +58,15 @@ export default function EmployerSignup() {
       if (error) throw error;
 
       if (data.user) {
-        const userCompany = companyName || data.user.user_metadata?.company_name || '';
-        const userPhone = phone || data.user.user_metadata?.phone || '';
-
-        // Insert into employer_profiles table
-        const { error: profileError } = await supabase.from('employer_profiles').upsert([
+        // Fallback safety insert in case trigger takes a moment
+        await supabase.from('employer_profiles').upsert([
           {
             id: data.user.id,
-            company_name: userCompany,
+            company_name: companyName,
             email: email,
-            phone: userPhone,
+            phone: phone,
           },
-        ]);
-
-        if (profileError) throw profileError;
+        ], { onConflict: 'id' });
 
         alert('🎉 Email verify ho gaya aur account safaltapurvak ban gaya!');
         router.push('/employer/dashboard');
