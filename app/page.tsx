@@ -606,6 +606,7 @@ export default function JobPortal() {
         </div>
      </section>
     {/* ===== 10-SECOND SHORT VIDEO SECTION (NEWS SECTION KE THEEK NICHE) ===== */}
+{/* ===== 10-SECOND SHORT VIDEO SECTION ===== */}
 <section className="w-full px-6 py-6 flex flex-col items-center justify-center">
   <div className="text-center mb-6">
     <h3 className="text-lg md:text-xl font-black text-[#0d47a1]">
@@ -616,7 +617,6 @@ export default function JobPortal() {
     </p>
   </div>
 
-  {/* Videos Container - Grid layout for multiple videos */}
   <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 w-full max-w-[600px] justify-items-center">
     
     {/* Video 1: hero-video.mp4 */}
@@ -626,7 +626,7 @@ export default function JobPortal() {
         src="/hero-video.mp4"
         autoPlay
         loop
-        muted
+        muted={isMuted}
         playsInline
         className="w-full h-auto object-cover max-h-[380px]"
       />
@@ -642,13 +642,21 @@ export default function JobPortal() {
     {/* Video 2: hero-video1.mp4 */}
     <div className="relative w-full max-w-[280px] rounded-2xl overflow-hidden shadow-xl border-4 border-white bg-black group">
       <video
+        ref={videoRef2}
         src="/hero-video1.mp4"
         autoPlay
         loop
-        muted
+        muted={isMuted2}
         playsInline
         className="w-full h-auto object-cover max-h-[380px]"
       />
+      <button
+        type="button"
+        onClick={toggleMute2}
+        className="absolute bottom-3 right-3 bg-black/80 hover:bg-black text-white text-xs font-bold px-3 py-1.5 rounded-full backdrop-blur-md transition border border-white/40 cursor-pointer shadow-md"
+      >
+        {isMuted2 ? '🔇 Unmute' : '🔊 Mute'}
+      </button>
     </div>
 
   </div>
