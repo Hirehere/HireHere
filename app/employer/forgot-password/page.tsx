@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
 export default function ForgotPassword() {
-  const [step, setStep] = useState<1 | 2 | 3>(1); // Step 1: Email, Step 2: OTP, Step 3: New Password
+  const [step, setStep] = useState<1 | 2 | 3>(1);
   const [email, setEmail] = useState('');
   const [otp, setOtp] = useState('');
   const [newPassword, setNewPassword] = useState('');
@@ -17,7 +17,7 @@ export default function ForgotPassword() {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
-  // STEP 1: Send OTP to Email
+  // STEP 1: Send OTP Code to Email
   const handleSendOtp = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg('');
@@ -27,7 +27,6 @@ export default function ForgotPassword() {
     const cleanEmail = email.trim().toLowerCase();
 
     try {
-      // 1. Check if email exists in employer_profiles table
       const { data: employer, error: checkError } = await supabase
         .from('employer_profiles')
         .select('id')
@@ -40,7 +39,6 @@ export default function ForgotPassword() {
         return;
       }
 
-      // 2. Request Password Reset OTP via Supabase Auth
       const { error } = await supabase.auth.resetPasswordForEmail(cleanEmail);
 
       if (error) {
@@ -56,7 +54,7 @@ export default function ForgotPassword() {
     }
   };
 
-  // STEP 2: Verify OTP
+  // STEP 2: Verify Standard OTP
   const handleVerifyOtp = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg('');
@@ -73,7 +71,7 @@ export default function ForgotPassword() {
       if (error || !data.session) {
         setErrorMsg('Galat ya expired OTP hai. Kripya firse check karein.');
       } else {
-        setSuccessMsg('OTP safaltapoorvak verify ho gaya! Ab naya password set karein.');
+        setSuccessMsg('OTP verify ho gaya! Ab naya password banayein.');
         setStep(3);
       }
     } catch (err: any) {
@@ -83,7 +81,7 @@ export default function ForgotPassword() {
     }
   };
 
-  // STEP 3: Save New Password
+  // STEP 3: Update Password
   const handleUpdatePassword = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg('');
@@ -109,7 +107,7 @@ export default function ForgotPassword() {
       if (error) {
         setErrorMsg(error.message || 'Password update karne me samasya aayi.');
       } else {
-        setSuccessMsg('🎉 Password safaltapoorvak badal diya gaya hai! Aapko login page par bheja ja raha hai...');
+        setSuccessMsg('🎉 Password safaltapoorvak badal diya gaya hai! Login page par bheja ja raha hai...');
         setTimeout(() => {
           router.push('/employer/login');
         }, 2500);
@@ -131,8 +129,8 @@ export default function ForgotPassword() {
             {step === 3 && 'Naya Password Banayein'}
           </h1>
           <p className="text-gray-500 text-sm mt-1">
-            {step === 1 && 'Apni registered Email ID darj karein, OTP bhejenge.'}
-            {step === 2 && 'Email par aaya 6-digit OTP code yahan darj karein.'}
+            {step === 1 && 'Apni registered Email ID darj karein.'}
+            {step === 2 && 'Email par aaya 6-digit OTP code darj karein.'}
             {step === 3 && 'Apne account ke liye naya password set karein.'}
           </p>
         </div>
@@ -149,7 +147,6 @@ export default function ForgotPassword() {
           </div>
         )}
 
-        {/* STEP 1: Enter Email */}
         {step === 1 && (
           <form onSubmit={handleSendOtp} className="space-y-4">
             <div>
@@ -176,7 +173,6 @@ export default function ForgotPassword() {
           </form>
         )}
 
-        {/* STEP 2: Enter OTP */}
         {step === 2 && (
           <form onSubmit={handleVerifyOtp} className="space-y-4">
             <div>
@@ -204,11 +200,7 @@ export default function ForgotPassword() {
 
             <button
               type="button"
-              onClick={() => {
-                setStep(1);
-                setErrorMsg('');
-                setSuccessMsg('');
-              }}
+              onClick={() => setStep(1)}
               className="w-full text-sm text-gray-500 hover:underline text-center block pt-1"
             >
               ← Email ID badlein
@@ -216,7 +208,6 @@ export default function ForgotPassword() {
           </form>
         )}
 
-        {/* STEP 3: Create New Password */}
         {step === 3 && (
           <form onSubmit={handleUpdatePassword} className="space-y-4">
             <div>
