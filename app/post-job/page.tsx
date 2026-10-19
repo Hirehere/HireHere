@@ -26,12 +26,11 @@ export default function PostJob() {
       // 1. Current Logged-in Employer fetch karein
       const { data: userData } = await supabase.auth.getUser();
 
-      // 2. Jobs Table me Data Insert karein (Mapping both company_name and company to prevent schema cache errors)
+      // 2. Jobs Table me Data Insert karein (Strictly using 'company_name' to avoid any cache error)
       const { error } = await supabase.from('jobs').insert([
         {
           title: formData.title,
           company_name: formData.company_name,
-          company: formData.company_name, // Fallback in case table column is named 'company'
           category: formData.category,
           location_city: formData.location_city,
           min_salary: Number(formData.min_salary),
@@ -94,7 +93,7 @@ export default function PostJob() {
                 type="text"
                 required
                 placeholder="उदा. कार ड्राइवर चाहिए / डिलीवरी बॉय"
-                className="w-full p-3 border border-gray-300 rounded-xl text-sm outline-none focus:border-[#0d47a1]"
+                className="w-full p-3 border border-gray-300 rounded-xl text-sm outline-none focus:border-[#0d47a1] text-gray-800"
                 value={formData.title}
                 onChange={(e) => setFormData({ ...formData, title: e.target.value })}
               />
@@ -108,7 +107,7 @@ export default function PostJob() {
                 type="text"
                 required
                 placeholder="उदा. Royal Enterprise / Sujit Shinde"
-                className="w-full p-3 border border-gray-300 rounded-xl text-sm outline-none focus:border-[#0d47a1]"
+                className="w-full p-3 border border-gray-300 rounded-xl text-sm outline-none focus:border-[#0d47a1] text-gray-800"
                 value={formData.company_name}
                 onChange={(e) => setFormData({ ...formData, company_name: e.target.value })}
               />
@@ -119,7 +118,7 @@ export default function PostJob() {
                 कैटेगरी (Category) *
               </label>
               <select
-                className="w-full p-3 border border-gray-300 rounded-xl text-sm outline-none bg-white focus:border-[#0d47a1]"
+                className="w-full p-3 border border-gray-300 rounded-xl text-sm outline-none bg-white focus:border-[#0d47a1] text-gray-800"
                 value={formData.category}
                 onChange={(e) => setFormData({ ...formData, category: e.target.value })}
               >
@@ -140,7 +139,7 @@ export default function PostJob() {
                 type="text"
                 required
                 placeholder="उदा. Pune, Mumbai, Delhi"
-                className="w-full p-3 border border-gray-300 rounded-xl text-sm outline-none focus:border-[#0d47a1]"
+                className="w-full p-3 border border-gray-300 rounded-xl text-sm outline-none focus:border-[#0d47a1] text-gray-800"
                 value={formData.location_city}
                 onChange={(e) => setFormData({ ...formData, location_city: e.target.value })}
               />
@@ -155,7 +154,7 @@ export default function PostJob() {
                   type="number"
                   required
                   placeholder="15000"
-                  className="w-full p-3 border border-gray-300 rounded-xl text-sm outline-none focus:border-[#0d47a1]"
+                  className="w-full p-3 border border-gray-300 rounded-xl text-sm outline-none focus:border-[#0d47a1] text-gray-800"
                   value={formData.min_salary}
                   onChange={(e) => setFormData({ ...formData, min_salary: e.target.value })}
                 />
@@ -168,7 +167,7 @@ export default function PostJob() {
                   type="number"
                   required
                   placeholder="25000"
-                  className="w-full p-3 border border-gray-300 rounded-xl text-sm outline-none focus:border-[#0d47a1]"
+                  className="w-full p-3 border border-gray-300 rounded-xl text-sm outline-none focus:border-[#0d47a1] text-gray-800"
                   value={formData.max_salary}
                   onChange={(e) => setFormData({ ...formData, max_salary: e.target.value })}
                 />
@@ -184,7 +183,7 @@ export default function PostJob() {
                 required
                 maxLength={10}
                 placeholder="वर्कर जिस नंबर पर कॉल करेगा"
-                className="w-full p-3 border border-gray-300 rounded-xl text-sm outline-none focus:border-[#0d47a1]"
+                className="w-full p-3 border border-gray-300 rounded-xl text-sm outline-none focus:border-[#0d47a1] text-gray-800"
                 value={formData.hr_call_number}
                 onChange={(e) => setFormData({ ...formData, hr_call_number: e.target.value })}
               />
@@ -199,7 +198,7 @@ export default function PostJob() {
                 required
                 maxLength={10}
                 placeholder="वर्कर जिस नंबर पर WhatsApp मैसेज करेगा"
-                className="w-full p-3 border border-gray-300 rounded-xl text-sm outline-none focus:border-[#0d47a1]"
+                className="w-full p-3 border border-gray-300 rounded-xl text-sm outline-none focus:border-[#0d47a1] text-gray-800"
                 value={formData.hr_whatsapp_number}
                 onChange={(e) => setFormData({ ...formData, hr_whatsapp_number: e.target.value })}
               />
@@ -208,7 +207,7 @@ export default function PostJob() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-[#0d47a1] hover:bg-[#1976d2] text-white font-extrabold p-3.5 rounded-xl text-base transition shadow-md mt-2 disabled:opacity-50"
+              className="w-full bg-[#0d47a1] hover:bg-[#1976d2] text-white font-extrabold p-3.5 rounded-xl text-base transition shadow-md mt-2 disabled:opacity-50 cursor-pointer"
             >
               {loading ? 'जॉब पोस्ट हो रही है...' : '🚀 मुफ्त में जॉब पोस्ट करें'}
             </button>
