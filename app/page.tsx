@@ -305,7 +305,7 @@ const toggleMute2 = () => {
               Hire<span className="text-[#ff6f00]">Here</span>
             </div>
             <div className="text-xs opacity-90 mt-1 tracking-wide">
-             👤Start Your Professional Journey!
+            Start Your Professional Journey!
             </div>
           </div>
 
