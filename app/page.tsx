@@ -279,21 +279,39 @@ export default function JobPortal() {
     }
   };
 
+ // Video 1 Toggle: Unmute Video 1 & Automatically Mute Video 2
   const toggleMute = () => {
     if (videoRef.current) {
-      videoRef.current.muted = !videoRef.current.muted;
-      setIsMuted(videoRef.current.muted);
+      const newMutedState = !isMuted;
+      setIsMuted(newMutedState);
+      videoRef.current.muted = newMutedState;
+
+      // अगर Video 1 Unmute हो रहा है, तो Video 2 को Mute कर दें
+      if (!newMutedState) {
+        setIsMuted2(true);
+        if (videoRef2.current) {
+          videoRef2.current.muted = true;
+        }
+      }
     }
   };
-  const [isMuted2, setIsMuted2] = useState(true);
-const videoRef2 = useRef<HTMLVideoElement | null>(null);
 
-const toggleMute2 = () => {
-  if (videoRef2.current) {
-    videoRef2.current.muted = !videoRef2.current.muted;
-    setIsMuted2(videoRef2.current.muted);
-  }
-};
+  // Video 2 Toggle: Unmute Video 2 & Automatically Mute Video 1
+  const toggleMute2 = () => {
+    if (videoRef2.current) {
+      const newMutedState = !isMuted2;
+      setIsMuted2(newMutedState);
+      videoRef2.current.muted = newMutedState;
+
+      // अगर Video 2 Unmute हो रहा है, तो Video 1 को Mute कर दें
+      if (!newMutedState) {
+        setIsMuted(true);
+        if (videoRef.current) {
+          videoRef.current.muted = true;
+        }
+      }
+    }
+  };
 
   return (
     <div className="w-full min-h-screen bg-[#f8fafc] font-sans pb-20 text-[#1a1a1a]">
