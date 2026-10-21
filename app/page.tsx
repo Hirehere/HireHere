@@ -724,7 +724,7 @@ const toggleMute2 = () => {
 
   {/* Chat Button */}
   <a
-    href="https://gemini.google.com/gems/YOUR_GEM_LINK_HERE" // Yahan apna Google Gem Link dalein
+    href="https://gemini.google.com/gem-labs/1hNHu8amXRWC92rUYnDhA4w4Mz4BYWdzS" // Yahan apna Google Gem Link dalein
     target="_blank"
     rel="noopener noreferrer"
     className="bg-gradient-to-r from-[#ff6f00] to-[#e65100] text-white p-3.5 rounded-full shadow-2xl flex items-center justify-center text-2xl transition-all duration-300 transform hover:scale-110 active:scale-95 border-2 border-white cursor-pointer"
