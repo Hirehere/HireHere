@@ -723,7 +723,7 @@ const toggleMute2 = () => {
 
         {/* Floating Chat Button with HH Branding */}
         <a
-          href="https://gemini.google.com/gem-labs/1hNHu8amXRWC92rUYnDhA4w4Mz4BYWdzS"
+          href="https://gemini.google.com/gem/151KREZVIfVpekWxFpOtBhZP4a8dektm9?usp=sharing"
           target="_blank"
           rel="noopener noreferrer"
           className="bg-[#0d47a1] hover:bg-[#1976d2] text-white w-14 h-14 rounded-full shadow-2xl flex items-center justify-center border-2 border-[#ff6f00] cursor-pointer transition transform hover:scale-110 active:scale-95 group"
