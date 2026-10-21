@@ -683,25 +683,7 @@ const toggleMute2 = () => {
         </div>
       </footer>
 
-      {/* FLOATING AI CHATBOT WIDGET */}
-      <div className="fixed bottom-20 md:bottom-6 right-5 z-50 flex items-center gap-2">
-        {/* Tooltip / Hint Tag */}
-        <span className="hidden sm:inline-block bg-white text-[#0d47a1] text-xs font-bold px-3 py-1.5 rounded-full shadow-md border border-blue-100 animate-pulse">
-          🤖 AI Help / Chat
-        </span>
-
-        {/* Chat Button */}
-        <a
-          href="https://gemini.google.com/gem-labs/1hNHu8amXRWC92rUYnDhA4w4Mz4BYWdzS"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="bg-gradient-to-r from-[#ff6f00] to-[#e65100] text-white p-3.5 rounded-full shadow-2xl flex items-center justify-center text-2xl transition-all duration-300 transform hover:scale-110 active:scale-95 border-2 border-white cursor-pointer"
-          title="HireHere AI Support"
-        >
-          💬
-        </a>
-      </div>
-
+      
      {/* FIXED BOTTOM NAVIGATION (MOBILE ONLY) */}
       <nav className="md:hidden fixed bottom-0 left-0 right-0 w-full bg-white border-t border-gray-200 py-2.5 px-4 flex justify-around items-center z-50 shadow-2xl">
         <button
