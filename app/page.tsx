@@ -732,22 +732,24 @@ const toggleMute2 = () => {
         </Link>
       </nav>
 
-      {/* ===== FLOATING AI CHATBOT WIDGET (UPDATED FOR GUARANTEED VISIBILITY) ===== */}
+      {/* ===== FLOATING AI CHATBOT WIDGET (WITH HH LOGO) ===== */}
       <div className="fixed bottom-24 md:bottom-8 right-4 z-[9999] flex items-center gap-2">
         {/* Tooltip Badge */}
         <span className="bg-white text-[#0d47a1] text-xs font-bold px-3 py-1.5 rounded-full shadow-lg border border-blue-200 animate-bounce">
-          🤖 AI Help
+          🤖 AI Support
         </span>
 
-        {/* Floating Chat Button */}
+        {/* Floating Chat Button with HH Branding */}
         <a
           href="https://gemini.google.com/gem-labs/1hNHu8amXRWC92rUYnDhA4w4Mz4BYWdzS"
           target="_blank"
           rel="noopener noreferrer"
-          className="bg-gradient-to-r from-[#ff6f00] to-[#e65100] text-white w-14 h-14 rounded-full shadow-2xl flex items-center justify-center text-2xl border-2 border-white cursor-pointer transition transform hover:scale-110 active:scale-95"
+          className="bg-[#0d47a1] hover:bg-[#1976d2] text-white w-14 h-14 rounded-full shadow-2xl flex items-center justify-center border-2 border-[#ff6f00] cursor-pointer transition transform hover:scale-110 active:scale-95 group"
           title="HireHere AI Support"
         >
-          💬
+          <span className="text-lg font-black tracking-tighter">
+            H<span className="text-[#ff6f00]">H</span>
+          </span>
         </a>
       </div>
 
