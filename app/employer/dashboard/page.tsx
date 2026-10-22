@@ -131,6 +131,7 @@ export default function EmployerDashboard() {
         employer_id: user.id,
         allow_direct_call: allowDirectCall,
         is_verified: true,
+        status: 'active',
       },
     ]);
 
@@ -161,47 +162,47 @@ export default function EmployerDashboard() {
     <div className="min-h-screen bg-gray-50 p-4 md:p-6 pb-12">
       <div className="max-w-6xl mx-auto bg-white rounded-xl shadow-md p-6">
         
-{/* Header & Language Toggle */}
-<div className="flex justify-between items-center border-b pb-4 mb-6 flex-wrap gap-4">
-  <div>
-    <h1 className="text-2xl font-black text-gray-800">
-      Hire<span className="text-[#ff6f00]">Here</span> Employer Portal
-    </h1>
-    <p className="text-sm text-gray-500">{user?.email}</p>
-  </div>
+        {/* Header & Language Toggle */}
+        <div className="flex justify-between items-center border-b pb-4 mb-6 flex-wrap gap-4">
+          <div>
+            <h1 className="text-2xl font-black text-gray-800">
+              Hire<span className="text-[#ff6f00]">Here</span> Employer Portal
+            </h1>
+            <p className="text-sm text-gray-500">{user?.email}</p>
+          </div>
 
-  <div className="flex items-center gap-3 flex-wrap">
-    {/* 🏠 Main Website Homepage Button */}
-    <button
-      type="button"
-      onClick={() => router.push('/')}
-      className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-blue-700 transition cursor-pointer flex items-center gap-2 shadow-sm"
-    >
-      🏠 {lang === 'hi' ? 'होम पेज' : 'Home'}
-    </button>
+          <div className="flex items-center gap-3 flex-wrap">
+            {/* Main Website Homepage Button */}
+            <button
+              type="button"
+              onClick={() => router.push('/')}
+              className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-blue-700 transition cursor-pointer flex items-center gap-2 shadow-sm"
+            >
+              🏠 {lang === 'hi' ? 'होम पेज' : 'Home'}
+            </button>
 
-    {/* Language Switcher */}
-    <button
-      type="button"
-      onClick={() => setLang(lang === 'hi' ? 'en' : 'hi')}
-      className="bg-gray-200 text-gray-800 px-3 py-2 rounded-lg text-sm font-bold hover:bg-gray-300 transition cursor-pointer"
-    >
-      🌐 {lang === 'hi' ? 'English' : 'हिंदी'}
-    </button>
+            {/* Language Switcher */}
+            <button
+              type="button"
+              onClick={() => setLang(lang === 'hi' ? 'en' : 'hi')}
+              className="bg-gray-200 text-gray-800 px-3 py-2 rounded-lg text-sm font-bold hover:bg-gray-300 transition cursor-pointer"
+            >
+              🌐 {lang === 'hi' ? 'English' : 'हिंदी'}
+            </button>
 
-    {/* Logout Button */}
-    <button
-      type="button"
-      onClick={async () => {
-        await supabase.auth.signOut();
-        router.push('/employer/login');
-      }}
-      className="bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-red-700 transition cursor-pointer"
-    >
-      {lang === 'hi' ? 'लॉगआउट' : 'Logout'}
-    </button>
-  </div>
-</div>
+            {/* Logout Button */}
+            <button
+              type="button"
+              onClick={async () => {
+                await supabase.auth.signOut();
+                router.push('/employer/login');
+              }}
+              className="bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-red-700 transition cursor-pointer"
+            >
+              {lang === 'hi' ? 'लॉगआउट' : 'Logout'}
+            </button>
+          </div>
+        </div>
 
         {/* Tab Navigation */}
         <div className="flex gap-2 md:gap-4 border-b mb-6 overflow-x-auto">
@@ -213,7 +214,7 @@ export default function EmployerDashboard() {
                 : 'text-gray-500'
             }`}
           >
-            📋 {lang === 'hi' ? `कैंडिडेट्स और आवेदन (${applications.length})` : `Candidates & Applications (${applications.length})`}
+            📋 {lang === 'hi' ? `कैंडिडेट्स आवेदन (${applications.length})` : `Applications (${applications.length})`}
           </button>
           <button
             onClick={() => setActiveTab('candidates')}
@@ -223,7 +224,7 @@ export default function EmployerDashboard() {
                 : 'text-gray-500'
             }`}
           >
-            👥 {lang === 'hi' ? `मेरी जॉब्स के आवेदक (${candidates.length})` : `Applicants for My Jobs (${candidates.length})`}
+            👥 {lang === 'hi' ? `आवेदकों के प्रोफाइल (${candidates.length})` : `Candidates Profiles (${candidates.length})`}
           </button>
           <button
             onClick={() => setActiveTab('post-job')}
@@ -237,18 +238,18 @@ export default function EmployerDashboard() {
           </button>
         </div>
 
-        {/* TAB 1: Job Applications */}
+        {/* TAB 1: Job Applications & Posted Jobs Summary */}
         {activeTab === 'applicants' && (
           <div>
             <h2 className="text-lg font-bold mb-4">
               {lang === 'hi' ? 'प्राप्त जॉब आवेदन (Received Applications)' : 'Received Job Applications'}
             </h2>
             {applications.length === 0 ? (
-              <p className="text-gray-500 py-8 text-center bg-gray-50 rounded-lg border">
+              <p className="text-gray-500 py-6 text-center bg-gray-50 rounded-lg border mb-8">
                 {lang === 'hi' ? 'अभी तक कोई आवेदन प्राप्त नहीं हुआ है।' : 'No applications received yet.'}
               </p>
             ) : (
-              <div className="overflow-x-auto">
+              <div className="overflow-x-auto mb-8">
                 <table className="w-full text-left border-collapse">
                   <thead>
                     <tr className="bg-gray-100 text-gray-700 text-sm">
@@ -279,7 +280,7 @@ export default function EmployerDashboard() {
             )}
 
             {/* Posted Jobs Summary Box */}
-            <div className="mt-8">
+            <div className="mt-4 border-t pt-6">
               <h3 className="text-md font-bold text-gray-800 mb-3">
                 {lang === 'hi' ? `📌 आपकी पोस्ट की गई नौकरियां (${jobs.length})` : `📌 Your Posted Jobs (${jobs.length})`}
               </h3>
@@ -289,39 +290,43 @@ export default function EmployerDashboard() {
                 </p>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                {/* Posted Jobs Summary Box ke andar job card me yeh status toggle add karein */}
-{jobs.map((job) => (
-  <div key={job.id} className="bg-gray-50 p-4 rounded-lg border text-sm flex justify-between items-center">
-    <div>
-      <h4 className="font-bold text-[#0d47a1]">{job.title}</h4>
-      <p className="text-xs text-gray-500 mt-1">📍 {job.location_city} | 💰 {job.salary} | 🏷️ {job.category}</p>
-    </div>
-    <div className="flex flex-col items-end gap-2">
-      <span className={`text-xs px-2.5 py-1 rounded-full font-bold ${job.status === 'closed' ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}>
-        {job.status === 'closed' ? '🔒 Closed' : '🟢 Active'}
-      </span>
-      <button
-        type="button"
-        onClick={async () => {
-          const newStatus = job.status === 'closed' ? 'active' : 'closed';
-          const { error } = await supabase
-            .from('jobs')
-            .update({ status: newStatus })
-            .eq('id', job.id);
+                  {jobs.map((job) => (
+                    <div key={job.id} className="bg-gray-50 p-4 rounded-lg border text-sm flex justify-between items-center">
+                      <div>
+                        <h4 className="font-bold text-[#0d47a1]">{job.title}</h4>
+                        <p className="text-xs text-gray-500 mt-1">📍 {job.location_city} | 💰 {job.salary} | 🏷️ {job.category}</p>
+                      </div>
+                      <div className="flex flex-col items-end gap-2">
+                        <span className={`text-xs px-2.5 py-1 rounded-full font-bold ${job.status === 'closed' ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}>
+                          {job.status === 'closed' ? '🔒 Closed' : '🟢 Active'}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={async () => {
+                            const newStatus = job.status === 'closed' ? 'active' : 'closed';
+                            const { error } = await supabase
+                              .from('jobs')
+                              .update({ status: newStatus })
+                              .eq('id', job.id);
 
-          if (!error) {
-            fetchEmployerData(user.id);
-          } else {
-            alert('Error updating status');
-          }
-        }}
-        className="text-xs text-blue-600 underline font-semibold cursor-pointer"
-      >
-        {job.status === 'closed' ? 'Active करें' : 'Closed करें'}
-      </button>
-    </div>
-  </div>
-))}
+                            if (!error) {
+                              fetchEmployerData(user.id);
+                            } else {
+                              alert('Error updating status');
+                            }
+                          }}
+                          className="text-xs text-blue-600 underline font-semibold cursor-pointer"
+                        >
+                          {job.status === 'closed' ? 'Active करें' : 'Closed करें'}
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* TAB 2: Candidates Full Profiles */}
         {activeTab === 'candidates' && (
@@ -341,8 +346,8 @@ export default function EmployerDashboard() {
                       <th className="p-3">{lang === 'hi' ? 'नाम' : 'Name'}</th>
                       <th className="p-3">{lang === 'hi' ? 'मोबाइल' : 'Mobile'}</th>
                       <th className="p-3">{lang === 'hi' ? 'जॉब शीर्षक' : 'Job Title'}</th>
-                      <th className="p-3">{lang === 'hi' ? 'पद / रोल (Designation)' : 'Designation'}</th>
-                      <th className="p-3">{lang === 'hi' ? 'योग्यता / डिग्री' : 'Qualification'}</th>
+                      <th className="p-3">{lang === 'hi' ? 'पद / रोल' : 'Designation'}</th>
+                      <th className="p-3">{lang === 'hi' ? 'योग्यता' : 'Qualification'}</th>
                       <th className="p-3">{lang === 'hi' ? 'अनुभव' : 'Experience'}</th>
                       <th className="p-3">{lang === 'hi' ? 'रिज्यूम' : 'Resume'}</th>
                     </tr>
@@ -470,7 +475,7 @@ export default function EmployerDashboard() {
             )}
 
             <div>
-              <label className="block text-sm font-medium text-gray-700">Calling Number (कॉल करने का नंबर) *</label>
+              <label className="block text-sm font-medium text-gray-700">Calling Number *</label>
               <input
                 type="tel"
                 required

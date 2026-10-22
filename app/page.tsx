@@ -124,13 +124,9 @@ export default function JobPortal() {
   const [searchLocation, setSearchLocation] = useState('');
   const [activeTab, setActiveTab] = useState('all');
   
-  // Modal & Copy States
-  const [selectedJobForContact, setSelectedJobForContact] = useState<{
-    applicantName: string;
-    hrNum: string;
-    jobTitle: string;
-  } | null>(null);
-  const [copied, setCopied] = useState(false);
+  // Track applied jobs and their HR contact details directly inside each job card
+  const [appliedJobsData, setAppliedJobsData] = useState<{ [key: string]: { applicantName: string; hrNum: string } }>({});
+  const [copiedId, setCopiedId] = useState<string | null>(null);
 
   // Video States & Refs
   const [isMuted, setIsMuted] = useState(true);
@@ -147,7 +143,6 @@ export default function JobPortal() {
     }
   }, []);
   
-  // Auto-redirect if user lands on homepage with recovery token from Gmail
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const hash = window.location.hash;
@@ -157,7 +152,6 @@ export default function JobPortal() {
     }
   }, [router]);
 
-  // Force play videos on mount
   useEffect(() => {
     if (videoRef.current) {
       videoRef.current.play().catch((err) => {
@@ -216,7 +210,7 @@ export default function JobPortal() {
     setSearchCategory(category === 'all' ? '' : category);
   };
 
-  // 🚀 Apply and show HR Contact Popup with Copy option
+  // 🚀 Apply and show HR Contact directly under the specific job card
   const handleApplyAndCall = async (job: any) => {
     const candidatePhone = prompt(
       lang === 'hi'
@@ -273,22 +267,21 @@ export default function JobPortal() {
       return;
     }
 
-    const hrNum = job.hr_whatsapp_number || job.hr_call_number || job.hr_phone || job.employer_phone || '';
+    const hrNum = job.hr_whatsapp_number || job.hr_call_number || job.hr_phone || job.employer_phone || 'N/A';
     
-    setSelectedJobForContact({
-      applicantName,
-      hrNum,
-      jobTitle: job.title
-    });
+    // Save state for this specific job card
+    setAppliedJobsData((prev) => ({
+      ...prev,
+      [job.id]: { applicantName, hrNum }
+    }));
   };
 
-  const handleCopyNumber = (number: string) => {
+  const handleCopyNumber = (number: string, jobId: string) => {
     navigator.clipboard.writeText(number);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    setCopiedId(jobId);
+    setTimeout(() => setCopiedId(null), 2000);
   };
 
-  // Video Toggles
   const toggleMute = () => {
     if (videoRef.current) {
       const newMutedState = !isMuted;
@@ -407,7 +400,7 @@ export default function JobPortal() {
         </div>
       </section>
 
-      {/* CATEGories SECTION */}
+      {/* CATEGORIES SECTION */}
       <section className="w-full px-6 py-6">
         <h2 className="text-xl md:text-2xl font-black text-[#0d47a1] mb-4">
           {t.catQuestion} <span className="text-[#ff6f00]">{t.catQuestionHighlight}</span> {t.catQuestionSuffix}
@@ -481,52 +474,81 @@ export default function JobPortal() {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {jobs.map((job) => (
-              <div
-                key={job.id}
-                className="bg-white rounded-2xl p-5 shadow-sm border-l-4 border-[#0d47a1] hover:shadow-md transition flex flex-col justify-between"
-              >
-                <div>
-                  <div className="flex justify-between items-start gap-2 mb-2">
-                    <h3 className="font-extrabold text-[#0d47a1] text-lg leading-snug">{job.title}</h3>
-                    {job.is_verified && (
-                      <span className="bg-[#e8f5e9] text-[#2e7d32] text-xs font-extrabold px-2.5 py-1 rounded-md whitespace-nowrap">
-                        {t.verifiedBadge}
+            {jobs.map((job) => {
+              const appliedInfo = appliedJobsData[job.id];
+
+              return (
+                <div
+                  key={job.id}
+                  className="bg-white rounded-2xl p-5 shadow-sm border-l-4 border-[#0d47a1] hover:shadow-md transition flex flex-col justify-between"
+                >
+                  <div>
+                    <div className="flex justify-between items-start gap-2 mb-2">
+                      <h3 className="font-extrabold text-[#0d47a1] text-lg leading-snug">{job.title}</h3>
+                      {job.is_verified && (
+                        <span className="bg-[#e8f5e9] text-[#2e7d32] text-xs font-extrabold px-2.5 py-1 rounded-md whitespace-nowrap">
+                          {t.verifiedBadge}
+                        </span>
+                      )}
+                    </div>
+
+                    <div className="text-sm text-gray-600 mb-2">
+                      🏢 <strong className="text-gray-800">{job.company || job.company_name}</strong>
+                    </div>
+
+                    <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-gray-600 mb-4">
+                      <span className="font-extrabold text-[#2e7d32]">
+                        💰 {job.salary || `₹${job.min_salary || 0} - ₹${job.max_salary || 0}`} {t.monthSalary}
                       </span>
-                    )}
+                      <span>📍 {job.location_city}</span>
+                    </div>
                   </div>
 
-                  <div className="text-sm text-gray-600 mb-2">
-                    🏢 <strong className="text-gray-800">{job.company || job.company_name}</strong>
-                  </div>
-
-                  <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-gray-600 mb-4">
-                    <span className="font-extrabold text-[#2e7d32]">
-                      💰 {job.salary || `₹${job.min_salary || 0} - ₹${job.max_salary || 0}`} {t.monthSalary}
-                    </span>
-                    <span>📍 {job.location_city}</span>
-                  </div>
+                  {/* SUCCESS NOTIFICATION & HR NUMBER DISPLAY (NO POPUP) */}
+                  {appliedInfo ? (
+                    <div className="mt-2 p-3 bg-green-50 border border-green-200 rounded-xl space-y-2 animate-fadeIn">
+                      <div className="text-green-800 font-extrabold text-xs flex items-center gap-1.5">
+                        <span>🎉</span>
+                        <span>Congratulations {appliedInfo.applicantName}! Applied successfully.</span>
+                      </div>
+                      <p className="text-[11px] text-gray-600">
+                        {lang === 'hi' ? 'नीचे दिए गए HR नंबर पर संपर्क करें:' : 'Contact HR using the number below:'}
+                      </p>
+                      <div className="flex items-center justify-between bg-white p-2 rounded-lg border border-green-300">
+                        <span className="font-black text-gray-800 text-sm">
+                          📞 {appliedInfo.hrNum}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => handleCopyNumber(appliedInfo.hrNum, job.id)}
+                          className="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold px-3 py-1.5 rounded transition cursor-pointer active:scale-95"
+                        >
+                          {copiedId === job.id ? '✅ Copied!' : '📋 Copy'}
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex gap-3 pt-3 border-t border-gray-100 mt-2">
+                      <button
+                        type="button"
+                        onClick={() => handleApplyAndCall(job)}
+                        className="flex-1 bg-[#0d47a1] hover:bg-[#1976d2] text-white text-center py-2.5 rounded-xl text-xs md:text-sm font-black transition shadow-sm cursor-pointer"
+                      >
+                        {t.applyCallBtn}
+                      </button>
+                      <a
+                        href={`https://wa.me/${job.hr_whatsapp_number || job.hr_call_number || job.hr_phone || job.employer_phone}?text=Hi,%20I%20am%20interested%20in%20the%20${encodeURIComponent(job.title)}%20job%20posted%20on%20HireHere.in`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="w-12 bg-[#25D366] hover:bg-green-600 text-white flex items-center justify-center rounded-xl text-xl transition shadow-sm"
+                      >
+                        💬
+                      </a>
+                    </div>
+                  )}
                 </div>
-
-                <div className="flex gap-3 pt-3 border-t border-gray-100 mt-2">
-                  <button
-                    type="button"
-                    onClick={() => handleApplyAndCall(job)}
-                    className="flex-1 bg-[#0d47a1] hover:bg-[#1976d2] text-white text-center py-2.5 rounded-xl text-xs md:text-sm font-black transition shadow-sm cursor-pointer"
-                  >
-                    {t.applyCallBtn}
-                  </button>
-                  <a
-                    href={`https://wa.me/${job.hr_whatsapp_number || job.hr_call_number || job.hr_phone || job.employer_phone}?text=Hi,%20I%20am%20interested%20in%20the%20${encodeURIComponent(job.title)}%20job%20posted%20on%20HireHere.in`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="w-12 bg-[#25D366] hover:bg-green-600 text-white flex items-center justify-center rounded-xl text-xl transition shadow-sm"
-                  >
-                    💬
-                  </a>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </section>
@@ -746,70 +768,6 @@ export default function JobPortal() {
           </span>
         </a>
       </div>
-
-      {/* HR CONTACT DETAILS MODAL POPUP */}
-      {selectedJobForContact && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[10000] flex items-center justify-center p-4">
-          <div className="bg-white w-full max-w-sm rounded-2xl p-6 shadow-2xl border text-center animate-in fade-in zoom-in duration-200">
-            
-            <div className="text-4xl mb-2">🎉</div>
-            <h3 className="text-lg font-black text-[#0d47a1]">
-              {lang === 'hi' ? `बधाई हो ${selectedJobForContact.applicantName}!` : `Congratulations ${selectedJobForContact.applicantName}!`}
-            </h3>
-            <p className="text-xs text-gray-500 mt-1 mb-4">
-              {lang === 'hi' ? 'आपका आवेदन सफलतापूर्वक भेज दिया गया है।' : 'Your application was submitted successfully.'}
-            </p>
-
-            {/* HR Number Display Card */}
-            <div className="bg-blue-50 border border-blue-200 rounded-xl p-3 mb-4 flex items-center justify-between">
-              <div className="text-left">
-                <div className="text-[11px] font-bold text-gray-500 uppercase">HR / Owner Phone</div>
-                <div className="text-lg font-black text-[#0d47a1] tracking-wider">
-                  📞 {selectedJobForContact.hrNum}
-                </div>
-              </div>
-
-              {/* Copy Button */}
-              <button
-                type="button"
-                onClick={() => handleCopyNumber(selectedJobForContact.hrNum)}
-                className="bg-white border border-blue-300 hover:bg-blue-100 text-[#0d47a1] font-bold text-xs px-3 py-2 rounded-lg transition active:scale-95 flex items-center gap-1 shadow-sm cursor-pointer"
-              >
-                {copied ? '✅ Copied!' : '📋 Copy'}
-              </button>
-            </div>
-
-            {/* Action Buttons */}
-            <div className="space-y-2">
-              <a
-                href={`tel:${selectedJobForContact.hrNum}`}
-                className="w-full bg-[#0d47a1] hover:bg-[#1976d2] text-white font-bold py-3 rounded-xl block text-sm transition shadow-md"
-              >
-                📞 डायरेक्ट कॉल करें (Direct Call)
-              </a>
-
-              <a
-                href={`https://wa.me/${selectedJobForContact.hrNum}?text=${encodeURIComponent(`Hi, I am ${selectedJobForContact.applicantName}. I applied for ${selectedJobForContact.jobTitle} on HireHere.`)}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-full bg-[#25D366] hover:bg-green-600 text-white font-bold py-3 rounded-xl block text-sm transition shadow-md"
-              >
-                💬 WhatsApp पर चैट करें
-              </a>
-
-              <button
-                type="button"
-                onClick={() => setSelectedJobForContact(null)}
-                className="w-full text-xs text-gray-400 hover:text-gray-600 font-bold py-2 pt-3 cursor-pointer"
-              >
-                बंद करें (Close)
-              </button>
-            </div>
-
-          </div>
-        </div>
-      )}
-
     </div>
   );
 }
