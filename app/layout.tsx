@@ -1,6 +1,9 @@
 import type { Metadata } from 'next';
-import './globals.css'; // <-- Yeh line CSS ko load karne ke liye zaroori hai
+import { Analytics } from '@vercel/analytics/react';
+import { SpeedInsights } from '@vercel/speed-insights/next';
+import './globals.css'; // Global styling load karne ke liye
 
+// SEO metadata setup
 export const metadata: Metadata = {
   title: 'HireHere - Local Job Portal',
   description: 'Direct Call and WhatsApp hiring for local workers',
@@ -33,6 +36,7 @@ export const metadata: Metadata = {
   },
 };
 
+// Main RootLayout Component
 export default function RootLayout({
   children,
 }: {
@@ -40,7 +44,13 @@ export default function RootLayout({
 }) {
   return (
     <html lang="hi">
-      <body>{children}</body>
+      <body>
+        {children}
+        
+        {/* Vercel Web Analytics & Speed Monitoring */}
+        <Analytics />
+        <SpeedInsights />
+      </body>
     </html>
   );
 }
