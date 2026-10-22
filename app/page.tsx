@@ -123,8 +123,13 @@ export default function JobPortal() {
   const [searchCategory, setSearchCategory] = useState('');
   const [searchLocation, setSearchLocation] = useState('');
   const [activeTab, setActiveTab] = useState('all');
+  
+  // Video States & Refs (Fixed)
   const [isMuted, setIsMuted] = useState(true);
+  const [isMuted2, setIsMuted2] = useState(true);
   const videoRef = useRef<HTMLVideoElement | null>(null);
+  const videoRef2 = useRef<HTMLVideoElement | null>(null);
+  
   const router = useRouter();
 
   useEffect(() => {
@@ -134,7 +139,7 @@ export default function JobPortal() {
     }
   }, []);
   
-// Auto-redirect if user lands on homepage with recovery token from Gmail
+  // Auto-redirect if user lands on homepage with recovery token from Gmail
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const hash = window.location.hash;
@@ -144,11 +149,16 @@ export default function JobPortal() {
     }
   }, [router]);
 
-  // Force play video on mount
+  // Force play videos on mount
   useEffect(() => {
     if (videoRef.current) {
       videoRef.current.play().catch((err) => {
-        console.log("Autoplay failed, waiting for interaction", err);
+        console.log("Autoplay failed for video 1", err);
+      });
+    }
+    if (videoRef2.current) {
+      videoRef2.current.play().catch((err) => {
+        console.log("Autoplay failed for video 2", err);
       });
     }
   }, []);
@@ -279,14 +289,13 @@ export default function JobPortal() {
     }
   };
 
- // Video 1 Toggle: Unmute Video 1 & Automatically Mute Video 2
+  // Video 1 Toggle: Unmute Video 1 & Automatically Mute Video 2
   const toggleMute = () => {
     if (videoRef.current) {
       const newMutedState = !isMuted;
       setIsMuted(newMutedState);
       videoRef.current.muted = newMutedState;
 
-      // अगर Video 1 Unmute हो रहा है, तो Video 2 को Mute कर दें
       if (!newMutedState) {
         setIsMuted2(true);
         if (videoRef2.current) {
@@ -303,7 +312,6 @@ export default function JobPortal() {
       setIsMuted2(newMutedState);
       videoRef2.current.muted = newMutedState;
 
-      // अगर Video 2 Unmute हो रहा है, तो Video 1 को Mute कर दें
       if (!newMutedState) {
         setIsMuted(true);
         if (videoRef.current) {
@@ -323,7 +331,7 @@ export default function JobPortal() {
               Hire<span className="text-[#ff6f00]">Here</span>
             </div>
             <div className="text-xs opacity-90 mt-1 tracking-wide">
-            Start Your Professional Journey!
+              Start Your Professional Journey!
             </div>
           </div>
 
@@ -631,63 +639,65 @@ export default function JobPortal() {
             </div>
           </div>
         </div>
-     </section>
-    {/* ===== 10-SECOND SHORT VIDEO SECTION (NEWS SECTION KE THEEK NICHE) ===== */}
-<section className="w-full px-6 py-6 flex flex-col items-center justify-center">
-  <div className="text-center mb-6">
-    <h3 className="text-lg md:text-xl font-black text-[#0d47a1]">
-      {t.videoHeading}
-    </h3>
-    <p className="text-xs text-gray-500 mt-0.5">
-      {t.videoSubheading}
-    </p>
-  </div>
+      </section>
 
-  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 w-full max-w-[600px] justify-items-center">
-    
-    {/* Video 1: hero-video.mp4 */}
-    <div className="relative w-full max-w-[280px] rounded-2xl overflow-hidden shadow-xl border-4 border-white bg-black group">
-      <video
-        ref={videoRef}
-        src="/hero-video.mp4"
-        autoPlay
-        loop
-        muted={isMuted}
-        playsInline
-        className="w-full h-auto object-cover max-h-[380px]"
-      />
-      <button
-        type="button"
-        onClick={toggleMute}
-        className="absolute bottom-3 right-3 bg-black/80 hover:bg-black text-white text-xs font-bold px-3 py-1.5 rounded-full backdrop-blur-md transition border border-white/40 cursor-pointer shadow-md"
-      >
-        {isMuted ? '🔇' : '🔊'}
-      </button>
-    </div>
+      {/* 10-SECOND SHORT VIDEO SECTION */}
+      <section className="w-full px-6 py-6 flex flex-col items-center justify-center">
+        <div className="text-center mb-6">
+          <h3 className="text-lg md:text-xl font-black text-[#0d47a1]">
+            {t.videoHeading}
+          </h3>
+          <p className="text-xs text-gray-500 mt-0.5">
+            {t.videoSubheading}
+          </p>
+        </div>
 
-    {/* Video 2: hero-video1.mp4 */}
-    <div className="relative w-full max-w-[280px] rounded-2xl overflow-hidden shadow-xl border-4 border-white bg-black group">
-      <video
-        ref={videoRef2}
-        src="/hero-video1.mp4"
-        autoPlay
-        loop
-        muted={isMuted2}
-        playsInline
-        className="w-full h-auto object-cover max-h-[380px]"
-      />
-      <button
-        type="button"
-        onClick={toggleMute2}
-        className="absolute bottom-3 right-3 bg-black/80 hover:bg-black text-white text-xs font-bold px-3 py-1.5 rounded-full backdrop-blur-md transition border border-white/40 cursor-pointer shadow-md"
-      >
-        {isMuted2 ? '🔇' : '🔊'}
-      </button>
-    </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 w-full max-w-[600px] justify-items-center">
+          
+          {/* Video 1: hero-video.mp4 */}
+          <div className="relative w-full max-w-[280px] rounded-2xl overflow-hidden shadow-xl border-4 border-white bg-black group">
+            <video
+              ref={videoRef}
+              src="/hero-video.mp4"
+              autoPlay
+              loop
+              muted={isMuted}
+              playsInline
+              className="w-full h-auto object-cover max-h-[380px]"
+            />
+            <button
+              type="button"
+              onClick={toggleMute}
+              className="absolute bottom-3 right-3 bg-black/80 hover:bg-black text-white text-xs font-bold px-3 py-1.5 rounded-full backdrop-blur-md transition border border-white/40 cursor-pointer shadow-md"
+            >
+              {isMuted ? '🔇' : '🔊'}
+            </button>
+          </div>
 
-  </div>
-</section>
-{/* FOOTER */}
+          {/* Video 2: hero-video1.mp4 */}
+          <div className="relative w-full max-w-[280px] rounded-2xl overflow-hidden shadow-xl border-4 border-white bg-black group">
+            <video
+              ref={videoRef2}
+              src="/hero-video1.mp4"
+              autoPlay
+              loop
+              muted={isMuted2}
+              playsInline
+              className="w-full h-auto object-cover max-h-[380px]"
+            />
+            <button
+              type="button"
+              onClick={toggleMute2}
+              className="absolute bottom-3 right-3 bg-black/80 hover:bg-black text-white text-xs font-bold px-3 py-1.5 rounded-full backdrop-blur-md transition border border-white/40 cursor-pointer shadow-md"
+            >
+              {isMuted2 ? '🔇' : '🔊'}
+            </button>
+          </div>
+
+        </div>
+      </section>
+
+      {/* FOOTER */}
       <footer className="w-full bg-[#0d47a1] text-white text-center py-10 px-6 mt-8">
         <div className="text-2xl font-black mb-1">
           Hire<span className="text-[#ff6f00]">Here</span>
@@ -701,8 +711,7 @@ export default function JobPortal() {
         </div>
       </footer>
 
-      
-     {/* FIXED BOTTOM NAVIGATION (MOBILE ONLY) */}
+      {/* FIXED BOTTOM NAVIGATION (MOBILE ONLY) */}
       <nav className="md:hidden fixed bottom-0 left-0 right-0 w-full bg-white border-t border-gray-200 py-2.5 px-4 flex justify-around items-center z-50 shadow-2xl">
         <button
           type="button"
@@ -732,14 +741,11 @@ export default function JobPortal() {
         </Link>
       </nav>
 
-      {/* ===== FLOATING AI CHATBOT WIDGET (WITH HH LOGO) ===== */}
+      {/* FLOATING AI CHATBOT WIDGET */}
       <div className="fixed bottom-24 md:bottom-8 right-4 z-[9999] flex items-center gap-2">
-        {/* Tooltip Badge */}
         <span className="bg-white text-[#0d47a1] text-xs font-bold px-3 py-1.5 rounded-full shadow-lg border border-blue-200 animate-bounce">
           🤖 AI Support
         </span>
-
-        {/* Floating Chat Button with HH Branding */}
         <a
           href="https://gemini.google.com/gem/151KREZVIfVpekWxFpOtBhZP4a8dektm9?usp=sharing"
           target="_blank"
