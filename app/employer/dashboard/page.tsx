@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '../../lib/supabase';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 
 export default function EmployerDashboard() {
   const [activeTab, setActiveTab] = useState<'applicants' | 'post-job' | 'candidates'>('applicants');
@@ -42,7 +43,6 @@ export default function EmployerDashboard() {
   const fetchEmployerData = async (employerId: string) => {
     setLoading(true);
     try {
-      // Fetch Employer Profile to pre-fill Company Name & Phone Number
       const { data: profile } = await supabase
         .from('employer_profiles')
         .select('*')
@@ -57,7 +57,6 @@ export default function EmployerDashboard() {
         }
       }
 
-      // 1. Fetch Employer's Posted Jobs
       const { data: jobData } = await supabase
         .from('jobs')
         .select('*')
@@ -67,7 +66,6 @@ export default function EmployerDashboard() {
       const currentJobs = jobData || [];
       setJobs(currentJobs);
 
-      // 2. Fetch Job Applications
       const { data: appData } = await supabase
         .from('job_applications')
         .select('*, jobs(title)')
@@ -77,7 +75,6 @@ export default function EmployerDashboard() {
       const currentApps = appData || [];
       setApplications(currentApps);
 
-      // 3. Fetch Synced Candidate Profiles
       if (currentApps.length > 0) {
         const applicantPhones = currentApps.map((app) => app.applicant_phone);
         
@@ -122,7 +119,6 @@ export default function EmployerDashboard() {
 
     const finalCompanyName = companyName.trim() || 'My Company';
 
-    // Insert payload strictly matching Supabase `jobs` schema columns
     const { error } = await supabase.from('jobs').insert([
       {
         title: jobTitle,
@@ -165,52 +161,25 @@ export default function EmployerDashboard() {
     <div className="min-h-screen bg-gray-50 p-4 md:p-6 pb-12">
       <div className="max-w-6xl mx-auto bg-white rounded-xl shadow-md p-6">
         
-        {{/* Header & Language Toggle */}
-<div className="flex justify-between items-center border-b pb-4 mb-6 flex-wrap gap-4">
-  <div>
-    <h1 className="text-2xl font-black text-gray-800">
-      Hire<span className="text-[#ff6f00]">Here</span> Employer Portal
-    </h1>
-    <p className="text-sm text-gray-500">{user?.email}</p>
-  </div>
+        {/* Header & Language Toggle */}
+        <div className="flex justify-between items-center border-b pb-4 mb-6 flex-wrap gap-4">
+          <div>
+            <h1 className="text-2xl font-black text-gray-800">
+              Hire<span className="text-[#ff6f00]">Here</span> Employer Portal
+            </h1>
+            <p className="text-sm text-gray-500">{user?.email}</p>
+          </div>
 
-  <div className="flex items-center gap-3 flex-wrap">
-    {/* 🏠 Main Website Homepage Button */}
-    <Link
-      href="/"
-      className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-blue-700 transition cursor-pointer flex items-center gap-2 shadow-sm"
-    >
-      🏠 {lang === 'hi' ? 'होम पेज' : 'Home'}
-    </Link>
-
-    {/* Language Switcher */}
-    <button
-      onClick={() => setLang(lang === 'hi' ? 'en' : 'hi')}
-      className="bg-gray-200 text-gray-800 px-3 py-2 rounded-lg text-sm font-bold hover:bg-gray-300 transition cursor-pointer"
-    >
-      🌐 {lang === 'hi' ? 'English' : 'हिंदी'}
-    </button>
-
-    {/* Logout Button */}
-    <button
-      onClick={async () => {
-        await supabase.auth.signOut();
-        router.push('/employer/login');
-      }}
-      className="bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-red-700 transition cursor-pointer"
-    >
-      {lang === 'hi' ? 'लॉगआउट' : 'Logout'}
-    </button>
-  </div>
-</div>
-            {/* Home Button */}
-            <button
-              onClick={() => router.push('/')}
-              className="bg-blue-600 text-white px-3 py-2 rounded-lg text-sm font-bold hover:bg-blue-700 transition cursor-pointer flex items-center gap-1.5"
+          <div className="flex items-center gap-3 flex-wrap">
+            {/* 🏠 Main Website Homepage Button */}
+            <Link
+              href="/"
+              className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-blue-700 transition cursor-pointer flex items-center gap-2 shadow-sm"
             >
-              🏠 {lang === 'hi' ? 'होम (Home)' : 'Home'}
-            </button>
+              🏠 {lang === 'hi' ? 'होम पेज' : 'Home'}
+            </Link>
 
+            {/* Language Switcher */}
             <button
               onClick={() => setLang(lang === 'hi' ? 'en' : 'hi')}
               className="bg-gray-200 text-gray-800 px-3 py-2 rounded-lg text-sm font-bold hover:bg-gray-300 transition cursor-pointer"
@@ -218,14 +187,15 @@ export default function EmployerDashboard() {
               🌐 {lang === 'hi' ? 'English' : 'हिंदी'}
             </button>
 
+            {/* Logout Button */}
             <button
               onClick={async () => {
                 await supabase.auth.signOut();
                 router.push('/employer/login');
               }}
-              className="bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-red-700 cursor-pointer"
+              className="bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-red-700 transition cursor-pointer"
             >
-              {lang === 'hi' ? 'लॉगआउट (Logout)' : 'Logout'}
+              {lang === 'hi' ? 'लॉगआउट' : 'Logout'}
             </button>
           </div>
         </div>
