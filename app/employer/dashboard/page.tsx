@@ -289,17 +289,39 @@ export default function EmployerDashboard() {
                 </p>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  {jobs.map((job) => (
-                    <div key={job.id} className="bg-gray-50 p-4 rounded-lg border text-sm">
-                      <h4 className="font-bold text-[#0d47a1]">{job.title}</h4>
-                      <p className="text-xs text-gray-500 mt-1">📍 {job.location_city} | 💰 {job.salary} | 🏷️ {job.category}</p>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
-        )}
+                {/* Posted Jobs Summary Box ke andar job card me yeh status toggle add karein */}
+{jobs.map((job) => (
+  <div key={job.id} className="bg-gray-50 p-4 rounded-lg border text-sm flex justify-between items-center">
+    <div>
+      <h4 className="font-bold text-[#0d47a1]">{job.title}</h4>
+      <p className="text-xs text-gray-500 mt-1">📍 {job.location_city} | 💰 {job.salary} | 🏷️ {job.category}</p>
+    </div>
+    <div className="flex flex-col items-end gap-2">
+      <span className={`text-xs px-2.5 py-1 rounded-full font-bold ${job.status === 'closed' ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}>
+        {job.status === 'closed' ? '🔒 Closed' : '🟢 Active'}
+      </span>
+      <button
+        type="button"
+        onClick={async () => {
+          const newStatus = job.status === 'closed' ? 'active' : 'closed';
+          const { error } = await supabase
+            .from('jobs')
+            .update({ status: newStatus })
+            .eq('id', job.id);
+
+          if (!error) {
+            fetchEmployerData(user.id);
+          } else {
+            alert('Error updating status');
+          }
+        }}
+        className="text-xs text-blue-600 underline font-semibold cursor-pointer"
+      >
+        {job.status === 'closed' ? 'Active करें' : 'Closed करें'}
+      </button>
+    </div>
+  </div>
+))}
 
         {/* TAB 2: Candidates Full Profiles */}
         {activeTab === 'candidates' && (
