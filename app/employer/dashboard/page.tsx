@@ -165,16 +165,44 @@ export default function EmployerDashboard() {
     <div className="min-h-screen bg-gray-50 p-4 md:p-6 pb-12">
       <div className="max-w-6xl mx-auto bg-white rounded-xl shadow-md p-6">
         
-        {/* Header & Language Toggle */}
-        <div className="flex justify-between items-center border-b pb-4 mb-6 flex-wrap gap-4">
-          <div>
-            <h1 className="text-2xl font-black text-gray-800">
-              Hire<span className="text-[#ff6f00]">Here</span> Employer Portal
-            </h1>
-            <p className="text-sm text-gray-500">{user?.email}</p>
-          </div>
+        {{/* Header & Language Toggle */}
+<div className="flex justify-between items-center border-b pb-4 mb-6 flex-wrap gap-4">
+  <div>
+    <h1 className="text-2xl font-black text-gray-800">
+      Hire<span className="text-[#ff6f00]">Here</span> Employer Portal
+    </h1>
+    <p className="text-sm text-gray-500">{user?.email}</p>
+  </div>
 
-          <div className="flex items-center gap-3 flex-wrap">
+  <div className="flex items-center gap-3 flex-wrap">
+    {/* 🏠 Main Website Homepage Button */}
+    <Link
+      href="/"
+      className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-blue-700 transition cursor-pointer flex items-center gap-2 shadow-sm"
+    >
+      🏠 {lang === 'hi' ? 'होम पेज' : 'Home'}
+    </Link>
+
+    {/* Language Switcher */}
+    <button
+      onClick={() => setLang(lang === 'hi' ? 'en' : 'hi')}
+      className="bg-gray-200 text-gray-800 px-3 py-2 rounded-lg text-sm font-bold hover:bg-gray-300 transition cursor-pointer"
+    >
+      🌐 {lang === 'hi' ? 'English' : 'हिंदी'}
+    </button>
+
+    {/* Logout Button */}
+    <button
+      onClick={async () => {
+        await supabase.auth.signOut();
+        router.push('/employer/login');
+      }}
+      className="bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-red-700 transition cursor-pointer"
+    >
+      {lang === 'hi' ? 'लॉगआउट' : 'Logout'}
+    </button>
+  </div>
+</div>
             {/* Home Button */}
             <button
               onClick={() => router.push('/')}
