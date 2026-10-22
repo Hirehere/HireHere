@@ -204,7 +204,7 @@ export default function JobPortal() {
     setSearchCategory(category === 'all' ? '' : category);
   };
 
-  const handleApplyAndCall = async (job: any) => {
+const handleApplyAndCall = async (job: any) => {
     const candidatePhone = prompt(
       lang === 'hi'
         ? 'आवेदन करने के लिए अपना 10 अंकों का रजिस्टर्ड मोबाइल नंबर दर्ज करें:'
@@ -255,36 +255,29 @@ export default function JobPortal() {
 
     let { error } = await supabase.from('job_applications').insert([payloadToInsert]);
 
-    if (error && error.message.includes('column')) {
-      const fallbackPayload = {
-        job_id: job.id,
-        name: applicantName,
-        phone: cleanPhone,
-        resume_url: resumeUrl,
-      };
-      if (job.employer_id) (fallbackPayload as any).employer_id = job.employer_id;
-      const res = await supabase.from('job_applications').insert([fallbackPayload]);
-      error = res.error;
-    }
-
     if (error) {
       alert((lang === 'hi' ? 'आवेदन करने में त्रुटि: ' : 'Error applying: ') + error.message);
       return;
     }
 
-    alert(
-      lang === 'hi'
-        ? `🎉 बधाई हो ${applicantName}! आपका आवेदन सफलतापूर्वक भेज दिया गया है।`
-        : `🎉 Congratulations ${applicantName}! Your application has been submitted successfully.`
+    // 🚀 Smooth WhatsApp & Call Option Popup
+    const hrNum = job.hr_whatsapp_number || job.hr_call_number || job.hr_phone || job.employer_phone;
+    const whatsappMsg = encodeURIComponent(
+      `Hi, I am ${applicantName}. I applied for the "${job.title}" job on HireHere.in. My contact number is ${cleanPhone}.`
     );
 
-    if (job.allow_direct_call !== false) {
-      const callNow = confirm(lang === 'hi' ? 'क्या आप HR को सीधा कॉल करना चाहते हैं?' : 'Do you want to call the HR directly?');
+    const openWhatsApp = confirm(
+      lang === 'hi'
+        ? `🎉 बधाई हो ${applicantName}! आवेदन हो गया। क्या आप HR से सीधे WhatsApp पर चैट करना चाहते हैं?`
+        : `🎉 Congratulations ${applicantName}! Applied successfully. Do you want to chat with HR on WhatsApp now?`
+    );
+
+    if (openWhatsApp && hrNum) {
+      window.open(`https://wa.me/${hrNum}?text=${whatsappMsg}`, '_blank');
+    } else if (hrNum) {
+      const callNow = confirm(lang === 'hi' ? 'क्या आप HR को सीधा कॉल करना चाहते हैं?' : 'Do you want to call HR directly?');
       if (callNow) {
-        const hrNumber = job.hr_call_number || job.hr_phone || job.employer_phone || job.phone;
-        if (hrNumber) {
-          window.location.href = `tel:${hrNumber}`;
-        }
+        window.location.href = `tel:${hrNum}`;
       }
     }
   };
