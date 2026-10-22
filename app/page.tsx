@@ -124,7 +124,15 @@ export default function JobPortal() {
   const [searchLocation, setSearchLocation] = useState('');
   const [activeTab, setActiveTab] = useState('all');
   
-  // Video States & Refs (Fixed)
+  // Modal & Copy States
+  const [selectedJobForContact, setSelectedJobForContact] = useState<{
+    applicantName: string;
+    hrNum: string;
+    jobTitle: string;
+  } | null>(null);
+  const [copied, setCopied] = useState(false);
+
+  // Video States & Refs
   const [isMuted, setIsMuted] = useState(true);
   const [isMuted2, setIsMuted2] = useState(true);
   const videoRef = useRef<HTMLVideoElement | null>(null);
@@ -173,7 +181,11 @@ export default function JobPortal() {
   const fetchJobs = async () => {
     setLoading(true);
     try {
-      let query = supabase.from('jobs').select('*').order('created_at', { ascending: false });
+      let query = supabase
+        .from('jobs')
+        .select('*')
+        .or('status.eq.active,status.is.null')
+        .order('created_at', { ascending: false });
 
       if (searchCategory && searchCategory !== 'all') {
         query = query.ilike('category', `%${searchCategory}%`);
@@ -204,7 +216,8 @@ export default function JobPortal() {
     setSearchCategory(category === 'all' ? '' : category);
   };
 
-const handleApplyAndCall = async (job: any) => {
+  // 🚀 Apply and show HR Contact Popup with Copy option
+  const handleApplyAndCall = async (job: any) => {
     const candidatePhone = prompt(
       lang === 'hi'
         ? 'आवेदन करने के लिए अपना 10 अंकों का रजिस्टर्ड मोबाइल नंबर दर्ज करें:'
@@ -260,56 +273,42 @@ const handleApplyAndCall = async (job: any) => {
       return;
     }
 
-    // 🚀 Smooth WhatsApp & Call Option Popup
-    const hrNum = job.hr_whatsapp_number || job.hr_call_number || job.hr_phone || job.employer_phone;
-    const whatsappMsg = encodeURIComponent(
-      `Hi, I am ${applicantName}. I applied for the "${job.title}" job on HireHere.in. My contact number is ${cleanPhone}.`
-    );
-
-    const openWhatsApp = confirm(
-      lang === 'hi'
-        ? `🎉 बधाई हो ${applicantName}! आवेदन हो गया। क्या आप HR से सीधे WhatsApp पर चैट करना चाहते हैं?`
-        : `🎉 Congratulations ${applicantName}! Applied successfully. Do you want to chat with HR on WhatsApp now?`
-    );
-
-    if (openWhatsApp && hrNum) {
-      window.open(`https://wa.me/${hrNum}?text=${whatsappMsg}`, '_blank');
-    } else if (hrNum) {
-      const callNow = confirm(lang === 'hi' ? 'क्या आप HR को सीधा कॉल करना चाहते हैं?' : 'Do you want to call HR directly?');
-      if (callNow) {
-        window.location.href = `tel:${hrNum}`;
-      }
-    }
+    const hrNum = job.hr_whatsapp_number || job.hr_call_number || job.hr_phone || job.employer_phone || '';
+    
+    setSelectedJobForContact({
+      applicantName,
+      hrNum,
+      jobTitle: job.title
+    });
   };
 
-  // Video 1 Toggle: Unmute Video 1 & Automatically Mute Video 2
+  const handleCopyNumber = (number: string) => {
+    navigator.clipboard.writeText(number);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  // Video Toggles
   const toggleMute = () => {
     if (videoRef.current) {
       const newMutedState = !isMuted;
       setIsMuted(newMutedState);
       videoRef.current.muted = newMutedState;
-
       if (!newMutedState) {
         setIsMuted2(true);
-        if (videoRef2.current) {
-          videoRef2.current.muted = true;
-        }
+        if (videoRef2.current) videoRef2.current.muted = true;
       }
     }
   };
 
-  // Video 2 Toggle: Unmute Video 2 & Automatically Mute Video 1
   const toggleMute2 = () => {
     if (videoRef2.current) {
       const newMutedState = !isMuted2;
       setIsMuted2(newMutedState);
       videoRef2.current.muted = newMutedState;
-
       if (!newMutedState) {
         setIsMuted(true);
-        if (videoRef.current) {
-          videoRef.current.muted = true;
-        }
+        if (videoRef.current) videoRef.current.muted = true;
       }
     }
   };
@@ -408,7 +407,7 @@ const handleApplyAndCall = async (job: any) => {
         </div>
       </section>
 
-      {/* CATEGORIES SECTION */}
+      {/* CATEGories SECTION */}
       <section className="w-full px-6 py-6">
         <h2 className="text-xl md:text-2xl font-black text-[#0d47a1] mb-4">
           {t.catQuestion} <span className="text-[#ff6f00]">{t.catQuestionHighlight}</span> {t.catQuestionSuffix}
@@ -552,7 +551,7 @@ const handleApplyAndCall = async (job: any) => {
         </div>
       </section>
 
-      {/* NEWS ARTICLE / MEDIA COVERAGE SECTION */}
+      {/* NEWS ARTICLE SECTION */}
       <section className="w-full px-6 py-6">
         <div className="w-full bg-white rounded-2xl p-6 md:p-8 border shadow-sm">
           <div className="text-center mb-6">
@@ -634,7 +633,7 @@ const handleApplyAndCall = async (job: any) => {
         </div>
       </section>
 
-      {/* 10-SECOND SHORT VIDEO SECTION */}
+      {/* SHORT VIDEO SECTION */}
       <section className="w-full px-6 py-6 flex flex-col items-center justify-center">
         <div className="text-center mb-6">
           <h3 className="text-lg md:text-xl font-black text-[#0d47a1]">
@@ -646,8 +645,6 @@ const handleApplyAndCall = async (job: any) => {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 w-full max-w-[600px] justify-items-center">
-          
-          {/* Video 1: hero-video.mp4 */}
           <div className="relative w-full max-w-[280px] rounded-2xl overflow-hidden shadow-xl border-4 border-white bg-black group">
             <video
               ref={videoRef}
@@ -667,7 +664,6 @@ const handleApplyAndCall = async (job: any) => {
             </button>
           </div>
 
-          {/* Video 2: hero-video1.mp4 */}
           <div className="relative w-full max-w-[280px] rounded-2xl overflow-hidden shadow-xl border-4 border-white bg-black group">
             <video
               ref={videoRef2}
@@ -686,7 +682,6 @@ const handleApplyAndCall = async (job: any) => {
               {isMuted2 ? '🔇' : '🔊'}
             </button>
           </div>
-
         </div>
       </section>
 
@@ -751,6 +746,69 @@ const handleApplyAndCall = async (job: any) => {
           </span>
         </a>
       </div>
+
+      {/* HR CONTACT DETAILS MODAL POPUP */}
+      {selectedJobForContact && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[10000] flex items-center justify-center p-4">
+          <div className="bg-white w-full max-w-sm rounded-2xl p-6 shadow-2xl border text-center animate-in fade-in zoom-in duration-200">
+            
+            <div className="text-4xl mb-2">🎉</div>
+            <h3 className="text-lg font-black text-[#0d47a1]">
+              {lang === 'hi' ? `बधाई हो ${selectedJobForContact.applicantName}!` : `Congratulations ${selectedJobForContact.applicantName}!`}
+            </h3>
+            <p className="text-xs text-gray-500 mt-1 mb-4">
+              {lang === 'hi' ? 'आपका आवेदन सफलतापूर्वक भेज दिया गया है।' : 'Your application was submitted successfully.'}
+            </p>
+
+            {/* HR Number Display Card */}
+            <div className="bg-blue-50 border border-blue-200 rounded-xl p-3 mb-4 flex items-center justify-between">
+              <div className="text-left">
+                <div className="text-[11px] font-bold text-gray-500 uppercase">HR / Owner Phone</div>
+                <div className="text-lg font-black text-[#0d47a1] tracking-wider">
+                  📞 {selectedJobForContact.hrNum}
+                </div>
+              </div>
+
+              {/* Copy Button */}
+              <button
+                type="button"
+                onClick={() => handleCopyNumber(selectedJobForContact.hrNum)}
+                className="bg-white border border-blue-300 hover:bg-blue-100 text-[#0d47a1] font-bold text-xs px-3 py-2 rounded-lg transition active:scale-95 flex items-center gap-1 shadow-sm cursor-pointer"
+              >
+                {copied ? '✅ Copied!' : '📋 Copy'}
+              </button>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="space-y-2">
+              <a
+                href={`tel:${selectedJobForContact.hrNum}`}
+                className="w-full bg-[#0d47a1] hover:bg-[#1976d2] text-white font-bold py-3 rounded-xl block text-sm transition shadow-md"
+              >
+                📞 डायरेक्ट कॉल करें (Direct Call)
+              </a>
+
+              <a
+                href={`https://wa.me/${selectedJobForContact.hrNum}?text=${encodeURIComponent(`Hi, I am ${selectedJobForContact.applicantName}. I applied for ${selectedJobForContact.jobTitle} on HireHere.`)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full bg-[#25D366] hover:bg-green-600 text-white font-bold py-3 rounded-xl block text-sm transition shadow-md"
+              >
+                💬 WhatsApp पर चैट करें
+              </a>
+
+              <button
+                type="button"
+                onClick={() => setSelectedJobForContact(null)}
+                className="w-full text-xs text-gray-400 hover:text-gray-600 font-bold py-2 pt-3 cursor-pointer"
+              >
+                बंद करें (Close)
+              </button>
+            </div>
+
+          </div>
+        </div>
+      )}
 
     </div>
   );
