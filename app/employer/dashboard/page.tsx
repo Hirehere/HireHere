@@ -174,7 +174,15 @@ export default function EmployerDashboard() {
             <p className="text-sm text-gray-500">{user?.email}</p>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 flex-wrap">
+            {/* Home Button */}
+            <button
+              onClick={() => router.push('/')}
+              className="bg-blue-600 text-white px-3 py-2 rounded-lg text-sm font-bold hover:bg-blue-700 transition cursor-pointer flex items-center gap-1.5"
+            >
+              🏠 {lang === 'hi' ? 'होम (Home)' : 'Home'}
+            </button>
+
             <button
               onClick={() => setLang(lang === 'hi' ? 'en' : 'hi')}
               className="bg-gray-200 text-gray-800 px-3 py-2 rounded-lg text-sm font-bold hover:bg-gray-300 transition cursor-pointer"
@@ -376,7 +384,7 @@ export default function EmployerDashboard() {
                 required
                 value={companyName}
                 onChange={(e) => setCompanyName(e.target.value)}
-                placeholder="e.g. Maswer Automotive"
+                placeholder="e.g. Company Name"
                 className="w-full border rounded p-2 mt-1 focus:ring-2 focus:ring-blue-500 outline-none text-gray-800"
               />
             </div>
